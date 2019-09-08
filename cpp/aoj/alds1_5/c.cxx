@@ -86,6 +86,67 @@ const double PI = acos(-1.0);
 // #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
 //                       << " " << __FILE__ << endl;
 
+int n;
+using point = tuple<double, double>;
+
+tuple<point, point, point> get_points(point p1, point p2)
+{
+    double x1 = get<0>(p1);
+    double y1 = get<1>(p1);
+    double x2 = get<0>(p2);
+    double y2 = get<1>(p2);
+
+    auto delta = make_tuple(x2 - x1, y2 - y1);
+    double deltax = get<0>(delta);
+    double deltay = get<1>(delta);
+
+    auto s = make_tuple(x1 + deltax / 3.0, y1 + deltay / 3.0);
+    auto t = make_tuple(x1 + deltax / 3.0 * 2.0, y1 + deltay / 3.0 * 2.0);
+
+    double to_u_x = (deltax / 2.0 - deltay * sqrt(3.0) / 2.0) / 3.0;
+    double to_u_y = (deltax * sqrt(3.0) / 2.0 + deltay / 2.0) / 3.0;
+
+    auto u = make_tuple(x1 + get<0>(s) + to_u_x, y1 + get<1>(s) + to_u_y);
+
+    return make_tuple(s, u, t);
+}
+
+void print_p(point p1)
+{
+
+    double x1 = get<0>(p1);
+    double y1 = get<1>(p1);
+
+    cout << setprecision(10) << x1 << ' ' << y1 << endl;
+}
+
+void print_point(point p1, point p2, int count)
+{
+    if (count == 0)
+        return;
+
+    auto next_points = get_points(p1, p2);
+    auto s = get<0>(next_points);
+    auto u = get<1>(next_points);
+    auto t = get<2>(next_points);
+
+    print_point(p1, s, count - 1);
+    print_p(s);
+    print_point(s, u, count - 1);
+    print_p(u);
+    print_point(u, t, count - 1);
+    print_p(t);
+    print_point(t, p2, count - 1);
+}
+
 int main()
 {
+    cin >> n;
+
+    // tuple<int, int> a = make_tuple(1, 1);
+    auto a = make_tuple(1.0, 1.0);
+
+    print_p(make_tuple(0.0, 0.0));
+    print_point(make_tuple(0.0, 0.0), make_tuple(100.0, 0.0), n);
+    print_p(make_tuple(100.0, 0.0));
 }

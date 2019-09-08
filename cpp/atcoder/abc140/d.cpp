@@ -88,4 +88,92 @@ const double PI = acos(-1.0);
 
 int main()
 {
+    int n;
+    cin >> n;
+
+    int k;
+    cin >> k;
+
+    string S;
+    cin >> S;
+
+    vector<bool> LRs = vector<bool>(n - 1, false);
+    vector<bool> RLs = vector<bool>(n - 1, false);
+
+    int ans = 0;
+    FOR(i, 0, n - 1)
+    {
+        if (S[i] == 'L' && S[i + 1] == 'R')
+        {
+            LRs[i] = true;
+        }
+
+        if (S[i] == 'R' && S[i + 1] == 'L')
+        {
+            RLs[i] = true;
+        }
+
+        if (S[i] == 'L' && S[i + 1] == 'L')
+        {
+            ans += 1;
+        }
+
+        if (S[i] == 'R' && S[i + 1] == 'R')
+        {
+            ans += 1;
+        }
+    }
+
+    int count2 = 0;
+    int count1 = 0;
+    FOR(i, 0, n - 1)
+    {
+        if (LRs[i])
+        {
+            bool not_found = true;
+            FOR(j, i, n - 1)
+            {
+                if (RLs[j])
+                {
+                    // ans += 2;
+                    // RLs[j] = false;
+                    not_found = false;
+                    count2 += 1;
+                    break;
+                }
+            }
+            if (not_found)
+                count1 += 1;
+            break;
+        }
+
+        if (RLs[i])
+        {
+            bool not_found = true;
+            FOR(j, i, n - 1)
+            {
+                if (LRs[j])
+                {
+                    // LRs[j] = false;
+                    count2 += 1;
+                    not_found = false;
+                    break;
+                }
+            }
+            if (not_found)
+                count1 += 1;
+        }
+    }
+
+    if (count2 < k)
+    {
+        ans += count2 * 2;
+        ans += k - count2 < count1 ? k - count2 : count1;
+    }
+    else
+    {
+        ans += k * 2;
+    }
+
+    cout << ans << endl;
 }

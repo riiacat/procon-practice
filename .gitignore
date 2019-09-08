@@ -36,6 +36,7 @@
 *.out
 *.app
 
+
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json
@@ -49,3 +50,7 @@
 .history
 
 # End of https://www.gitignore.io/api/c++,visualstudiocode
+
+
+# Mac
+*.dSYM/

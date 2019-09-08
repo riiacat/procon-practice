@@ -88,4 +88,43 @@ const double PI = acos(-1.0);
 
 int main()
 {
+    int n;
+    cin >> n;
+
+    auto orders = VI();
+    REP(i, n)
+    {
+        int order;
+        cin >> order;
+        orders.push_back(order);
+    }
+
+    int answer = 0;
+    REP(i, n)
+    {
+        int manzoku;
+        cin >> manzoku;
+        answer += manzoku;
+    }
+
+    auto mariajus = VI();
+    REP(i, n - 1)
+    {
+        int mariaju;
+        cin >> mariaju;
+        mariajus.push_back(mariaju);
+    }
+
+    FOR(i, 0, n - 1)
+    {
+        if (orders[i] + 1 == orders[i + 1])
+        {
+            answer += mariajus[orders[i] - 1];
+        }
+        else
+        {
+        }
+    }
+
+    cout << answer << endl;
 }

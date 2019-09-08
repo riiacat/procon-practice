@@ -9,7 +9,6 @@
 #include <deque>
 #include <stack>
 #include <bitset>
-#include <tuple>
 #include <algorithm>
 #include <functional>
 #include <numeric>
@@ -86,6 +85,52 @@ const double PI = acos(-1.0);
 // #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
 //                       << " " << __FILE__ << endl;
 
+VI v = VI();
+
+bool canCalc(int to_calc, int from_idx)
+{
+    if (to_calc == 0)
+        return true;
+    if (from_idx == v.size())
+        return false;
+
+    if (canCalc(to_calc - v[from_idx], from_idx + 1))
+        return true;
+    else if (canCalc(to_calc, from_idx + 1))
+        return true;
+    else
+        return false;
+}
+
 int main()
 {
+    int n;
+    cin >> n;
+
+    REP(i, n)
+    {
+        int a;
+        cin >> a;
+        v.push_back(a);
+    }
+
+    int q;
+    cin >> q;
+
+    REP(i, q)
+    {
+        int qq;
+        cin >> qq;
+
+        if (canCalc(qq, 0))
+        {
+            cout << "yes" << endl;
+        }
+        else
+        {
+            cout << "no" << endl;
+        }
+    }
+
+    return 0;
 }

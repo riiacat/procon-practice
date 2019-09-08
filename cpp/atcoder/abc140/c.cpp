@@ -88,4 +88,27 @@ const double PI = acos(-1.0);
 
 int main()
 {
+    int n;
+    cin >> n;
+
+    VI B;
+    REP(i, n - 1)
+    {
+        int b;
+        cin >> b;
+        B.push_back(b);
+    }
+
+    int answer = 0;
+
+    //first
+    answer += B[0];
+
+    FOR(i, 1, n - 1)
+    {
+        answer += min(B[i], B[i - 1]);
+    }
+    answer += B[n - 2];
+
+    cout << answer << endl;
 }

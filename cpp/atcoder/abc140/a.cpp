@@ -9,6 +9,7 @@
 #include <deque>
 #include <stack>
 #include <bitset>
+#include <tuple>
 #include <algorithm>
 #include <functional>
 #include <numeric>
@@ -87,30 +88,7 @@ const double PI = acos(-1.0);
 
 int main()
 {
-
-    long n;
+    int n;
     cin >> n;
-
-    vector<long> R = vector<long>();
-
-    REP(i, n)
-    {
-        int r;
-        cin >> r;
-        R.push_back(r);
-    }
-
-    vector<long> max_v = vector<long>(n, -1);
-
-    REP(i, n)
-    {
-        //i以上のindexで最大の数字を見つけ、自分との差をとる
-        long max = *max_element(R.begin() + i, R.end());
-        max_v[i] = max - R[i] > 0 ? max - R[i] : -1;
-    }
-
-    long ans = *max_element(max_v.begin(), max_v.end());
-    cout << ans << '\n';
-
-    return 0;
+    cout << (n * n * n) << endl;
 }
