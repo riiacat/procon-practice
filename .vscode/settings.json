@@ -19,6 +19,10 @@
         "set": "cpp",
         "string": "cpp",
         "string_view": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "__string": "cpp",
+        "cstring": "cpp",
+        "cwchar": "cpp",
+        "locale": "cpp"
     }
 }
