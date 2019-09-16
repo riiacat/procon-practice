@@ -8,6 +8,7 @@
 #include <set>
 #include <deque>
 #include <stack>
+#include <queue>
 #include <bitset>
 #include <tuple>
 #include <algorithm>
@@ -24,6 +25,7 @@
 #include <string>
 #include <cstring>
 #include <ctime>
+#include <climits>
 
 using namespace std;
 
@@ -65,7 +67,7 @@ typedef long long LL;
 #define PB push_back
 #define MP make_pair
 #define SZ(a) int((a).size())
-#define EACH(i, c) for (typeof((c).begin()) i = (c).begin(); i != (c).end(); ++i)
+#define EACH(i, c) for (auto i = (c).begin(); i != (c).end(); ++i)
 #define EXIST(s, e) ((s).find(e) != (s).end())
 #define SORT(c) sort((c).begin(), (c).end())
 
