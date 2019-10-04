@@ -24,6 +24,7 @@
         "cstring": "cpp",
         "cwchar": "cpp",
         "locale": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "__node_handle": "cpp"
     }
 }
