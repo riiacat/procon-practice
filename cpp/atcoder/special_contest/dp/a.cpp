@@ -80,8 +80,6 @@ typedef long long LL;
 //--------------------------------------------
 const double EPS = 1e-10;
 const double PI = acos(-1.0);
-const long long INFL = __LONG_LONG_MAX__ / 10;
-const int INFI = __INT_MAX__ / 10;
 
 //clear memory
 #define CLR(a) memset((a), 0, sizeof(a))
@@ -91,6 +89,32 @@ const int INFI = __INT_MAX__ / 10;
 // #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
 //                       << " " << __FILE__ << endl;
 
+int N;
+
 int main()
 {
+    cin >> N;
+
+    VI H;
+    REP(i, N)
+    {
+        int h;
+        cin >> h;
+
+        H.push_back(h);
+    }
+
+    VL min_costs(N, 1'000'000'000'000);
+
+    min_costs[0] = 0;
+    min_costs[1] = abs(H[1] - H[0]);
+
+    FOR(i, 2, N) //3つ目に行くところからの一般化
+    {
+        min_costs[i] = min(
+            min_costs[i - 2] + abs(H[i] - H[i - 2]),
+            min_costs[i - 1] + abs(H[i] - H[i - 1]));
+    }
+
+    cout << min_costs[N - 1] << endl;
 }

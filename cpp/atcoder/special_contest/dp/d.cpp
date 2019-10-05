@@ -91,6 +91,59 @@ const int INFI = __INT_MAX__ / 10;
 // #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
 //                       << " " << __FILE__ << endl;
 
+int N, W;
+
+const int maxN = 100;
+const int maxW = 1e5;
+
+long long max_values[maxN + 1][maxW + 1];
+
 int main()
 {
+    cin >> N >> W;
+    VI weights, V;
+    REP(i, N)
+    {
+        int w, v;
+        cin >> w >> v;
+        weights.push_back(w);
+        V.push_back(v);
+    }
+
+    FOR(i, 0, N + 1)
+    {
+        FOR(j, 0, W + 1)
+        {
+            max_values[i][j] = -INFI;
+        }
+    }
+
+    FOR(i, 0, W + 1)
+    {
+        max_values[0][i] = 0;
+    }
+
+    FOR(i, 0, N + 1)
+    {
+        max_values[i][0] = 0;
+    }
+
+    FOR(items, 1, N + 1)
+    {
+        FOR(weight_lim, 1, W + 1)
+        {
+            int reduced_weight = weight_lim - weights[items - 1];
+            if (reduced_weight >= 0)
+            {
+                max_values[items][weight_lim] =
+                    max({max_values[items - 1][weight_lim], max_values[items - 1][reduced_weight] + V[items - 1]});
+            }
+            else
+            {
+                max_values[items][weight_lim] =
+                    max_values[items - 1][weight_lim];
+            }
+        }
+    }
+    cout << max_values[N][W] << endl;
 }
