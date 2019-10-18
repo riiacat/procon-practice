@@ -105,11 +105,18 @@ int main()
     ios::sync_with_stdio(false);
     cin >> N >> K;
 
+    LL sums = 0;
     REP(i, N)
     {
-        int aa;
+        LL aa;
         cin >> aa;
         a[i] = aa;
+        sums+= aa;
+    }
+
+    if(K > sums ){
+        cout << 0 << endl;
+        return 0;
     }
 
     REP(i, K + 1)
@@ -120,13 +127,26 @@ int main()
     FOR(n, 1, N)
     {
         memcpy(old_dp, dp, sizeof(dp));
-        LL ans = 0;
-        FOR(k, 0, K + 1)
-        {
-
-            // cout << "dp[" << k << "] = " << dp[k] << endl;
+        // FOR(aa, 1, a[n]+1){
+        LL sums[limit_K];
+        sums[0] = dp[0];
+        // cout << "sums[ "<< 0<< "] " << sums[0] << endl;            
+        FOR(k, 1, K+1){
+            sums[k] = (sums[k-1] + dp[k])%mod;
+            // cout << "sums[ "<< k<< "] " << sums[k] << endl;            
         }
+
+        FOR(k,1, K+1){
+            int left = max(-1, k-(a[n]+1));
+            if(left==-1){
+                dp[k] = sums[k];
+            }else{
+                dp[k] = (sums[k] - sums[left]) % mod;
+            }
+            // cout << "dp[ "<< k<< "] " << dp[k] << endl;
+        }
+        // }
     }
 
-    cout << dp[K] << endl;
+    cout << (dp[K] %mod) << endl;
 }
