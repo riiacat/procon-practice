@@ -91,7 +91,48 @@ const int INFI = __INT_MAX__ / 10;
 // #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
 //                       << " " << __FILE__ << endl;
 
+double dp[3000][3000];
+
+double p[2999];
 int main()
 {
     ios::sync_with_stdio(false);
+
+    int N;
+    cin >> N;
+
+    REP(i, N)
+    {
+        double pp;
+        cin >> pp;
+        p[i] = pp;
+    }
+
+    dp[0][0] = 1;
+
+    FOR(coin_N, 1, N + 1)
+    {
+        dp[coin_N][0] = dp[coin_N - 1][0] * (1 - p[coin_N - 1]);
+    }
+
+    FOR(coin_N, 1, N + 1)
+    {
+        dp[0][coin_N] = 0;
+    }
+
+    FOR(coin_N, 1, N + 1)
+    {
+        FOR(num1, 1, coin_N + 1)
+        {
+            dp[coin_N][num1] =
+                dp[coin_N - 1][num1] * (1 - p[coin_N - 1]) + dp[coin_N - 1][num1 - 1] * p[coin_N - 1];
+        }
+    }
+
+    double ans = 0;
+    for (int n = N / 2 + 1; n <= N; n++)
+    {
+        ans += dp[N][n];
+    }
+    cout << std::setprecision(12) << ans << endl;
 }

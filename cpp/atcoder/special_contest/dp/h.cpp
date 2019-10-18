@@ -91,7 +91,81 @@ const int INFI = __INT_MAX__ / 10;
 // #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
 //                       << " " << __FILE__ << endl;
 
+const int mod = 1e9 + 7;
+vector<string> maze;
+LL dp[1000][1000];
+
+int solve(int h, int w)
+{
+
+    if (dp[h][w] >= 0)
+    {
+        // cout << h << ", " << w << ", " << dp[h][w] << endl;
+        return dp[h][w];
+    }
+    else
+    {
+        LL ans = 0;
+        if (maze[h - 1][w] != '#')
+        {
+            ans += solve(h - 1, w);
+            ans %= mod;
+        }
+        if (maze[h][w - 1] != '#')
+        {
+            ans += solve(h, w - 1);
+            ans %= mod;
+        }
+        dp[h][w] = ans;
+
+        // cout << h << ", " << w << ", " << dp[h][w] << endl;
+        return ans;
+    }
+}
+
 int main()
 {
     ios::sync_with_stdio(false);
+
+    int H, W;
+    cin >> H >> W;
+
+    REP(i, H)
+    {
+        string row;
+        cin >> row;
+        maze.push_back(row);
+    }
+
+    REP(i, H)
+    {
+        REP(j, W)
+        {
+            dp[i][j] = (maze[i][j] == '#') ? 0 : -1;
+        }
+    }
+
+    bool isWall = false;
+    REP(i, H)
+    {
+        if (maze[i][0] == '#')
+        {
+            isWall = true;
+        }
+
+        dp[i][0] = isWall ? 0 : 1;
+    }
+
+    isWall = false;
+    REP(i, W)
+    {
+        if (maze[0][i] == '#')
+        {
+            isWall = true;
+        }
+
+        dp[0][i] = isWall ? 0 : 1;
+    }
+
+    cout << solve(H - 1, W - 1) << endl;
 }

@@ -93,5 +93,84 @@ const int INFI = __INT_MAX__ / 10;
 
 int main()
 {
-    ios::sync_with_stdio(false);
+    string s, t;
+    cin >> s >> t;
+
+    int n = s.length();
+    int m = t.length();
+
+    vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));
+
+    FOR(i, 1, n + 1)
+    {
+        FOR(j, 1, m + 1)
+        {
+            int c1, c2, c3;
+
+            c1 = dp[i - 1][j];
+            c2 = dp[i][j - 1];
+
+            if (c1 > c2)
+            {
+                if (s[i - 1] == t[j - 1])
+                {
+                    c3 = dp[i - 1][j - 1];
+                    if (c3 + 1 > c1)
+                    {
+                        dp[i][j] = c3 + 1;
+                    }
+                    else
+                    {
+                        dp[i][j] = c1;
+                    }
+                }
+                else
+                {
+                    dp[i][j] = c1;
+                }
+            }
+            else
+            {
+                if (s[i - 1] == t[j - 1])
+                {
+                    c3 = dp[i - 1][j - 1];
+                    if (c3 + 1 > c2)
+                    {
+                        dp[i][j] = c3 + 1;
+                    }
+                    else
+                    {
+                        dp[i][j] = c2;
+                    }
+                }
+                else
+                {
+                    dp[i][j] = c2;
+                }
+            }
+        }
+    }
+
+    string ans = "";
+    ans.reserve(3000);
+    while (n > 0 && m > 0)
+    {
+        if (dp[n][m] == dp[n - 1][m])
+        {
+            n--;
+        }
+        else if (dp[n][m] == dp[n][m - 1])
+        {
+            m--;
+        }
+        else if (dp[n][m] == dp[n - 1][m - 1] + 1)
+        {
+            ans += s[n - 1];
+            n--;
+            m--;
+        }
+    }
+
+    reverse(ans.begin(), ans.end());
+    cout << ans << endl;
 }

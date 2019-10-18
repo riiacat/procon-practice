@@ -91,7 +91,68 @@ const int INFI = __INT_MAX__ / 10;
 // #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
 //                       << " " << __FILE__ << endl;
 
+const int limit = 301;
+double dp[limit][limit][limit];
+int A[limit];
+
+int N;
+
+double solve(int i, int j, int k)
+{
+    // cout << i << ", " << j << ", " << k << endl;
+    if (dp[i][j][k] > 0)
+    {
+        return dp[i][j][k];
+    }
+    else
+    {
+        double s1, s2, s3;
+        s1 = i == 0 ? 0 : solve(i - 1, j, k);
+        s2 = j == 0 ? 0 : solve(i + 1, j - 1, k);
+        s3 = k == 0 ? 0 : solve(i, j + 1, k - 1);
+        dp[i][j][k] = (N + i * s1 + j * s2 + k * s3) / ((i + j + k) * 1.0);
+        return dp[i][j][k];
+    }
+}
+
 int main()
 {
     ios::sync_with_stdio(false);
+
+    cin >> N;
+
+    int I, J, K;
+    I = J= K =0;
+    REP(i, N)
+    {
+        int a;
+        cin >> a;
+        A[i] = a;
+        switch (a)
+        {
+        case 1:
+            I++;
+            break;
+        case 2:
+            J++;
+            break;
+        case 3:
+            K++;
+            break;
+        default:
+            return 0;
+            break;
+        }
+    }
+
+    // cout << "aaa" << endl;
+
+    // FOR(i, 0, N + 1)
+    // {
+    //     dp[i][0][0] = i;
+    // }
+    dp[0][0][0] = EPS;
+
+    cout << std::setprecision(100) 
+        << solve(I, J, K) << endl;
 }

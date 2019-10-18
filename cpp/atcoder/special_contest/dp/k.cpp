@@ -91,7 +91,117 @@ const int INFI = __INT_MAX__ / 10;
 // #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
 //                       << " " << __FILE__ << endl;
 
+const int limit = 1e5 + 1;
+int dp[limit];
+int A[100];
+set<int> A_set;
+
+int N, K;
+int min_a = 1e8;
+
+// bool solve(int k)
+// {
+//     if (dp[k] > 0)
+//     {
+//         return true;
+//     }
+//     else if (dp[k] < 0)
+//     {
+//         return false;
+//     }
+
+//     if (A_set.find(k) != A_set.end())
+//     {
+//         return true;
+//     }
+//     else if (k < min_a)
+//     {
+//         return false;
+//     }
+//     else
+//     {
+//         bool isWin = false;
+//         REP(i, N)
+//         {
+//             isWin |= !solve(k - A[i]);
+//         }
+//         dp[k] = isWin ? 1 : -1;
+//         return isWin;
+//     }
+// }
+
 int main()
 {
     ios::sync_with_stdio(false);
+
+    cin >> N >> K;
+
+    REP(i, N)
+    {
+        int a;
+        cin >> a;
+        A[i] = a;
+        min_a = min(min_a, a);
+        A_set.insert(a);
+    }
+
+    REP(i, K + 1)
+    {
+        dp[N] = 0;
+    }
+
+    stack<int> s;
+    s.push(K);
+
+    while (!s.empty())
+    {
+        int k = s.top();
+        // cout << k << endl;
+
+        if (dp[k] != 0)
+        {
+            s.pop();
+            continue;
+        }
+
+        if (A_set.find(k) != A_set.end())
+        {
+            dp[k] = 1;
+            s.pop();
+            continue;
+        }
+        else if (k < min_a)
+        {
+            dp[k] = -1;
+            s.pop();
+            continue;
+        }
+        else
+        {
+            bool isWin = false;
+            bool isNotCalced = false;
+            REP(i, N)
+            {
+                if (dp[k - A[i]] == 0)
+                {
+                    REP(j, N)
+                    {
+                        if (dp[k - A[j]] == 0)
+                            s.push(k - A[j]);
+                    }
+                    isNotCalced = true;
+                }
+                isWin |= !(dp[k - A[i]] > 0 ? true : false);
+            }
+
+            if (!isNotCalced)
+            {
+                dp[k] = isWin ? 1 : -1;
+                s.pop();
+                continue;
+            }
+        }
+    }
+
+    cout << (dp[K] > 0 ? "First" : "Second") << endl;
 }

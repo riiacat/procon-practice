@@ -1,3 +1,5 @@
+//木のDFS実装
+
 #include <iostream>
 
 //include
@@ -80,8 +82,6 @@ typedef long long LL;
 //--------------------------------------------
 const double EPS = 1e-10;
 const double PI = acos(-1.0);
-const long long INFL = __LONG_LONG_MAX__ / 10;
-const int INFI = __INT_MAX__ / 10;
 
 //clear memory
 #define CLR(a) memset((a), 0, sizeof(a))
@@ -91,7 +91,70 @@ const int INFI = __INT_MAX__ / 10;
 // #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
 //                       << " " << __FILE__ << endl;
 
-int main()
+using node = pair<LL, LL>; // vert index, cost
+
+using ll = long long;
+const int limit = 100010;
+using edge = struct
+{
+    int to;
+    ll cost;
+};
+
+vector<int> tree[limit];
+// ll depth[limit];
+ll max_depth[limit];
+
+int dfs(int from, int v, ll d)
+{
+    // cout << from << ", " << v << ", " << d << endl;
+    if (max_depth[v] > 0)
+    {
+        max_depth[from] = max(d + max_depth[v], max_depth[from]);
+        return d + max_depth[v];
+    }
+
+    int ans = -1;
+    for (auto &to : tree[v])
+    {
+        int dfs_res = dfs(from, to, d + 1);
+        max_depth[v] = max(dfs_res - d, max_depth[v]);
+
+        ans = max(dfs_res, ans);
+    }
+
+    max_depth[from] = ans < 0 ? d : ans;
+    return max_depth[from];
+}
+
+int main(void)
 {
     ios::sync_with_stdio(false);
+    int n, m;
+    cin >> n >> m;
+
+    for (int i = 0; i < m; ++i)
+    {
+        int x, y;
+        cin >> x >> y;
+        x--, y--;
+        tree[x].push_back(y);
+    }
+
+    int ans = -1;
+    FOR(i, 0, n)
+    {
+        int res = dfs(i, i, 0);
+        // cout << "dfs( " << i << " ) =" << res << endl;
+        ans = max(res, ans);
+    }
+
+    cout << ans << endl;
+    // for (int i = 0; i < q; ++i)
+    // {
+    //     int x, y;
+    //     cin >> x >> y;
+    //     x--, y--;
+    //     cout << depth[x] + depth[y] << endl;
+    // }
 }

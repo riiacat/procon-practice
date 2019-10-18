@@ -25,6 +25,7 @@
         "cwchar": "cpp",
         "locale": "cpp",
         "utility": "cpp",
-        "__node_handle": "cpp"
+        "__node_handle": "cpp",
+        "stack": "cpp"
     }
 }

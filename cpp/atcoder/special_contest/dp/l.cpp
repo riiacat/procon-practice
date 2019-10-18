@@ -91,7 +91,43 @@ const int INFI = __INT_MAX__ / 10;
 // #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
 //                       << " " << __FILE__ << endl;
 
+int N;
+LL dp1[3000][3000];
+LL dp2[3000][3000];
+int A[3000];
+
 int main()
 {
     ios::sync_with_stdio(false);
+
+    cin >> N;
+    REP(i, N)
+    {
+        int a;
+        cin >> a;
+        A[i] = a;
+        dp1[i][i] = a;
+        dp2[i][i] = a;
+    }
+
+    REP(i, N - 1)
+    {
+        dp1[i][i + 1] = max(A[i] - A[i + 1], A[i + 1] - A[i]);
+        dp2[i][i + 1] = min(A[i] - A[i + 1], A[i + 1] - A[i]);
+    }
+
+    FOR(len, 3, N + 1)
+    {
+        for (int l = 0; l <= N - len; l = l + 1)
+        {
+            int r = l + len - 1;
+            // cout << l << ", " << r << endl;
+            dp1[l][r] = max(
+                A[l] + dp2[l + 1][r], A[r] + dp2[l][r - 1]);
+            dp2[l][r] = min(
+                dp1[l + 1][r] - A[l], dp1[l][r - 1] - A[r]);
+        }
+    }
+
+    cout << (max(A[0] + dp2[1][N - 1], A[N - 1] + dp2[0][N - 2])) << endl;
 }

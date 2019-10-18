@@ -91,7 +91,42 @@ const int INFI = __INT_MAX__ / 10;
 // #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
 //                       << " " << __FILE__ << endl;
 
+int N, K;
+int a[100];
+
+const int limit_K = 1e5 + 1;
+LL old_dp[limit_K];
+LL dp[limit_K];
+
+// int mod = 10e9 + 7;
+int mod = 1000000007;
 int main()
 {
     ios::sync_with_stdio(false);
+    cin >> N >> K;
+
+    REP(i, N)
+    {
+        int aa;
+        cin >> aa;
+        a[i] = aa;
+    }
+
+    REP(i, K + 1)
+    {
+        dp[i] = i <= a[0] ? 1 : 0;
+    }
+
+    FOR(n, 1, N)
+    {
+        memcpy(old_dp, dp, sizeof(dp));
+        LL ans = 0;
+        FOR(k, 0, K + 1)
+        {
+
+            // cout << "dp[" << k << "] = " << dp[k] << endl;
+        }
+    }
+
+    cout << dp[K] << endl;
 }
