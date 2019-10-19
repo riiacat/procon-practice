@@ -86,11 +86,6 @@ const int INFI = __INT_MAX__ / 10;
 //clear memory
 #define CLR(a) memset((a), 0, sizeof(a))
 
-//debug
-// #define dump(x) cerr << #x << " = " << (x) << endl;
-// #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
-//                       << " " << __FILE__ << endl;
-
 uint64_t popcnt(uint64_t n)
 {
     uint64_t c = 0;
@@ -103,7 +98,48 @@ uint64_t popcnt(uint64_t n)
     return (c);
 }
 
+//debug
+// #define dump(x) cerr << #x << " = " << (x) << endl;
+// #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
+//                       << " " << __FILE__ << endl;
+
+const int LimitN = 21;
+int A[LimitN][LimitN];
+
+int N;
+const int mod = 1e9 + 7;
+
+LL dp[LimitN + 1][1 << LimitN];
+
 int main()
 {
     ios::sync_with_stdio(false);
+
+    cin >> N;
+    REP(i, N)
+    {
+        REP(j, N)
+        {
+            int a;
+            cin >> A[i][j];
+        }
+    }
+
+    dp[0][0] = 1;
+
+    FOR(i, 0, N)
+    {
+        FOR(msk, 0, 1 << N)
+        if (i == popcnt(msk))
+        {
+            FOR(j, 0, N)
+            if (!(msk & (1 << j)) && A[i][j] == 1)
+            {
+                dp[i + 1][msk | (1 << j)] += dp[i][msk];
+                dp[i + 1][msk | (1 << j)] %= mod;
+            }
+        }
+    }
+
+    cout << dp[N][(1 << N) - 1] << endl;
 }

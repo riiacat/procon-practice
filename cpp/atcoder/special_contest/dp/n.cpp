@@ -91,19 +91,44 @@ const int INFI = __INT_MAX__ / 10;
 // #define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" \
 //                       << " " << __FILE__ << endl;
 
-uint64_t popcnt(uint64_t n)
-{
-    uint64_t c = 0;
-    c = (n & 0x5555555555555555) + ((n >> 1) & 0x5555555555555555);
-    c = (c & 0x3333333333333333) + ((c >> 2) & 0x3333333333333333);
-    c = (c & 0x0f0f0f0f0f0f0f0f) + ((c >> 4) & 0x0f0f0f0f0f0f0f0f);
-    c = (c & 0x00ff00ff00ff00ff) + ((c >> 8) & 0x00ff00ff00ff00ff);
-    c = (c & 0x0000ffff0000ffff) + ((c >> 16) & 0x0000ffff0000ffff);
-    c = (c & 0x00000000ffffffff) + ((c >> 32) & 0x00000000ffffffff);
-    return (c);
-}
+const int LimitN=400;
+LL A[LimitN];
+LL sums[LimitN+1];
+LL dp[LimitN][LimitN];
+
 
 int main()
 {
     ios::sync_with_stdio(false);
+
+    int N;
+    cin >> N;
+    sums[0] = 0;
+    REP(i, N){
+        LL a;
+        cin >> a;
+        A[i] = a;
+        sums[i+1] = sums[i] + a; 
+        dp[i][i] = 0;
+    }
+
+
+    for(int len=1; len <= N ; len++){
+        for(int left=0; left+len < N; left++){
+            int right = left+len;
+            LL ans = __LONG_LONG_MAX__ / 10;
+            for(int sep = left+1; sep <= right; sep++){
+                LL mid = (sums[sep] - sums[left]) + (sums[right+1] - sums[sep]) +dp[left][sep-1] + dp[sep][right];
+                ans = min(
+                    mid
+                    , ans
+                );
+                // cout << left << ", " << sep << ", " << right << ", " << mid << endl;
+            }
+            dp[left][right] = ans;
+            // cout<< left << ", " << right << ", " << dp[left][right] <<endl;
+        }
+    }
+    
+    cout << dp[0][N-1] << endl;
 }

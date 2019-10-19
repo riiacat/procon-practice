@@ -103,7 +103,83 @@ uint64_t popcnt(uint64_t n)
     return (c);
 }
 
+const int LimitN = 1e5;
+const int mod = 1e9 + 7;
+VI edges[LimitN];
+int N;
+
+int parents[LimitN];
+VI children[LimitN];
+
+LL dp[LimitN][2]; //0: 白, 1:黒
+
+void dfs(int v, int p)
+{
+    for (auto &e : edges[v])
+    {
+        if (e == p)
+            continue;
+        parents[e] = v;
+        children[v].push_back(e);
+        // cout << "children " << v << " -> " << e << endl;
+        dfs(e, v);
+    }
+}
+
+LL solve(int v, bool isBlack)
+{
+    // cout << "solve: " << v << endl;
+    if (dp[v][isBlack ? 1 : 0] > 0)
+    {
+        return dp[v][isBlack ? 1 : 0];
+    }
+
+    LL ans = 1;
+    for (auto &e : children[v])
+    {
+        LL mid = 0;
+        mid += solve(e, false);
+        mid %= mod;
+        if (!isBlack)
+        {
+            mid += solve(e, true);
+            mid %= mod;
+        }
+
+        ans *= mid;
+        ans %= mod;
+    }
+
+    dp[v][isBlack ? 1 : 0] = ans;
+    return ans;
+}
+
 int main()
 {
     ios::sync_with_stdio(false);
+
+    cin >> N;
+
+    REP(i, N - 1)
+    {
+        int x, y;
+        cin >> x >> y;
+        x--;
+        y--;
+        edges[x].push_back(y);
+        edges[y].push_back(x);
+    }
+
+    REP(i, N)
+    {
+        dp[i][0] = -1;
+        dp[i][1] = -1;
+    }
+
+    //木を構築
+    dfs(0, -1);
+
+    //false: 白, true: 黒
+
+    cout << (solve(0, true) + solve(0, false)) % mod << endl;
 }
