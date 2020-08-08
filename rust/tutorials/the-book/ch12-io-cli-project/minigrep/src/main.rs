@@ -11,8 +11,8 @@ fn main() {
         process::exit(1);
     });
 
-    println!("クエリ: {}", config.query);
-    println!("検索対象ファイル: {}", config.filename);
+    // println!("クエリ: {}", config.query);
+    // println!("検索対象ファイル: {}", config.filename);
 
     if let Err(e) = minigrep::run(config) {
         println!("Appエラー: {}", e);
