@@ -1,22 +1,57 @@
 // -*- coding:utf-8-unix -*-
 
 use proconio::input;
+use std::io::*;
+use std::str::FromStr;
 
 // ABC086C - Traveling
-// https://atcoder.jp/contests/abs/fasks/arc089_a
+
+pub fn read<T: FromStr>() -> T {
+    let stdin = stdin();
+    let stdin = stdin.lock();
+    let token: String = stdin
+        .bytes()
+        .map(|c| c.expect("failed to read char") as char)
+        .skip_while(|c| c.is_whitespace())
+        .take_while(|c| !c.is_whitespace())
+        .collect();
+    token.parse().ok().expect("failed to parse token")
+}
 
 fn main() {
-    input! {
-        n: usize,
-        mut plan: [(i32, i32, i32); n],  // Vec<(i32, i32, i32)>
-    }
-    plan.insert(0, (0, 0, 0));
-    let yes = plan.windows(2).all(|w| {
-        let (t0, x0, y0) = w[0];
-        let (t1, x1, y1) = w[1];
-        let time = t1 - t0;
-        let dist = (x1 - x0).abs() + (y1 - y0).abs();
-        dist <= time && time % 2 == dist % 2
-    });
-    println!("{}", if yes { "Yes" } else { "No" });
+    // input!
+    //     input! {
+    //         n: u8,
+    //         m: u8,
+    //         sk: [[u8]; n],
+    //         ps: [u8; m]
+    //     }
+
+    //     println!(
+    //         r#"
+    // n: {},
+    // m: {},
+    // sk: {:?},
+    // ps: {:?}
+    //         "#,
+    //         n, m, sk, ps
+    //     );
+
+    // read
+    // let n: usize = read();
+    // let m: usize = read();
+    // let mut s: Vec<Vec<usize>> = vec![vec![]; m];
+    // let mut p: Vec<usize> = vec![];
+
+    // for i in 0..m {
+    //     let k = read();
+    //     for _ in 0..k {
+    //         s[i].push(read());
+    //     }
+    // }
+
+    // for _ in 0..m {
+    //     p.push(read());
+    // }
+    // let mut ans = 0;
 }
