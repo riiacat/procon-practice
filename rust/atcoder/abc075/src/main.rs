@@ -22,42 +22,89 @@ pub fn read<T: FromStr>() -> T {
     token.parse().ok().expect("failed to parse token")
 }
 
-//abc115-D
+//abc075-C
 #[fastout]
 fn main() {
-    input![n: u64, x: u64];
+    input![n: usize, m: usize, edge: [(usize, usize); m]];
 
-    println!("{}", go(n, x));
-}
+    // println!("n={}, m={} edges:{:?}", n, m, edge);
 
-fn go(level: u64, x: u64) -> u64 {
-    // println!("{}", size_burger(50));
-    // println!("{}, {}", level, x);
+    let mut ad_mat = vec![vec![false; n as usize]; n as usize];
 
-    let max_size = size_burger(level);
-
-    if level == 0 && x == 1 {
-        return 1;
-    } else if x <= 1 {
-        return 0;
+    for (from, to) in edge.iter() {
+        ad_mat[from - 1][to - 1] = true;
+        ad_mat[to - 1][from - 1] = true;
     }
 
-    if max_size - 1 <= x {
-        return size_meet(level);
+    // println!("{:?}", ad_mat);
+
+    let dfs = |non_use_edge: (usize, usize)| {
+        let (non_from, non_to) = non_use_edge;
+        let (non_from, non_to) = (non_from - 1, non_to - 1);
+
+        // eprintln!("non_use_edge: {}, {}", non_from, non_to);
+        for from_node_idx in 0..n {
+            // eprintln!("from_node_idx: {:?}", from_node_idx);
+            let mut s = Vec::new();
+            let mut is_visits = vec![false; n];
+            s.push(from_node_idx);
+
+            let is_all_visits = |is_visits: &Vec<bool>| {
+                for is_visit in is_visits.iter() {
+                    // eprintln!("is_visit: {}", *is_visit);
+
+                    if *is_visit {
+                    } else {
+                        return false;
+                    }
+                }
+
+                return true;
+            };
+
+            while !(s.is_empty() || is_all_visits(&is_visits)) {
+                let n = s.pop().unwrap();
+
+                if is_visits[n] {
+                    continue;
+                }
+
+                is_visits[n] = true;
+                for (idx, to) in ad_mat[n].iter().enumerate() {
+                    if (non_from == n && non_to == idx) || (non_from == idx && non_to == n) {
+                        // eprintln!("non_from: {}, non_to == {}", non_from, non_to);
+
+                        continue;
+                    }
+
+                    if *to {
+                        if !is_visits[idx] {
+                            s.push(idx);
+                        }
+                    }
+                }
+            }
+
+            // eprintln!(
+            //     "is_all_visits: {}, is_visits: {:?}, ",
+            //     is_all_visits(&is_visits),
+            //     is_visits
+            // );
+
+            if !is_all_visits(&is_visits) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    let mut ans = 0;
+    for non_use_edge in edge.iter() {
+        if !dfs(*non_use_edge) {
+            ans += 1;
+        }
     }
 
-    let bound = max_size / 2;
-    if x <= bound {
-        return go(level - 1, x - 1);
-    } else {
-        return size_meet(level - 1) + 1 + go(level - 1, x - size_burger(level - 1) - 2);
-    }
-}
-
-fn size_burger(level: u64) -> u64 {
-    (pow(2.0, level as f64 + 2.0) - 2.99999999999999999) as u64
-}
-
-fn size_meet(level: u64) -> u64 {
-    (pow(2.0, level as f64 + 1.0) - 0.99999999999999999) as u64
+    println!("{}", ans);
 }
