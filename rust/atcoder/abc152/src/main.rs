@@ -22,89 +22,55 @@ pub fn read<T: FromStr>() -> T {
     token.parse().ok().expect("failed to parse token")
 }
 
-//abc075-C
+//abc152-D
 #[fastout]
 fn main() {
-    input![n: usize, m: usize, edge: [(usize, usize); m]];
+    input![n: u64];
 
-    // println!("n={}, m={} edges:{:?}", n, m, edge);
+    let mut ans = 1;
 
-    let mut ad_mat = vec![vec![false; n as usize]; n as usize];
+    let digits = (log10(n as f64) + 1.0) as u64;
 
-    for (from, to) in edge.iter() {
-        ad_mat[from - 1][to - 1] = true;
-        ad_mat[to - 1][from - 1] = true;
+    let mut max_ditit_num = n;
+    while max_ditit_num > 9 {
+        max_ditit_num /= 10;
     }
 
-    // println!("{:?}", ad_mat);
-
-    let dfs = |non_use_edge: (usize, usize)| {
-        let (non_from, non_to) = non_use_edge;
-        let (non_from, non_to) = (non_from - 1, non_to - 1);
-
-        // eprintln!("non_use_edge: {}, {}", non_from, non_to);
-        for from_node_idx in 0..n {
-            // eprintln!("from_node_idx: {:?}", from_node_idx);
-            let mut s = Vec::new();
-            let mut is_visits = vec![false; n];
-            s.push(from_node_idx);
-
-            let is_all_visits = |is_visits: &Vec<bool>| {
-                for is_visit in is_visits.iter() {
-                    // eprintln!("is_visit: {}", *is_visit);
-
-                    if *is_visit {
-                    } else {
-                        return false;
-                    }
-                }
-
-                return true;
-            };
-
-            while !(s.is_empty() || is_all_visits(&is_visits)) {
-                let n = s.pop().unwrap();
-
-                if is_visits[n] {
-                    continue;
-                }
-
-                is_visits[n] = true;
-                for (idx, to) in ad_mat[n].iter().enumerate() {
-                    if (non_from == n && non_to == idx) || (non_from == idx && non_to == n) {
-                        // eprintln!("non_from: {}, non_to == {}", non_from, non_to);
-
-                        continue;
-                    }
-
-                    if *to {
-                        if !is_visits[idx] {
-                            s.push(idx);
-                        }
-                    }
-                }
-            }
-
-            // eprintln!(
-            //     "is_all_visits: {}, is_visits: {:?}, ",
-            //     is_all_visits(&is_visits),
-            //     is_visits
-            // );
-
-            if !is_all_visits(&is_visits) {
-                return false;
-            }
-        }
-
-        return true;
-    };
-
-    let mut ans = 0;
-    for non_use_edge in edge.iter() {
-        if !dfs(*non_use_edge) {
-            ans += 1;
-        }
+    for d in 1..(digits + 1) {
+        let mid = calc_conbination(1, d);
+        ans = (max_ditit_num * mid + 9) * ans;
     }
+
+    // ans = mid + ((mid * ans * max_ditit_num) as f64 / 9.0) as u64;
 
     println!("{}", ans);
+}
+
+// fn go(n: u64) -> u64 {
+//     let digits = (log10(n as f64) + 1.0) as u64;
+
+//     let mut ans = 0;
+//     for digit in 1..digits {
+//         ans += calc_conbination(10, digit);
+//     }
+
+//     let mut max_ditit_num = n;
+//     while max_ditit_num > 9 {
+//         max_ditit_num /= 10;
+//     }
+
+//     ans += calc_conbination(max_ditit_num, digits);
+
+//     return ans;
+// }
+
+fn calc_conbination(_end: u64, digits: u64) -> u64 {
+    // end: 1 -> 1, 2->2
+    if digits <= 2 {
+        return 1;
+    }
+
+    let multi = pow(10 as f64, (digits - 1) as f64) as u64;
+
+    return multi;
 }
