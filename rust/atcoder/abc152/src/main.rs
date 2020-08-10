@@ -27,50 +27,58 @@ pub fn read<T: FromStr>() -> T {
 fn main() {
     input![n: u64];
 
-    let mut ans = 1;
+    let mut comb = vec![0; 100];
 
-    let digits = (log10(n as f64) + 1.0) as u64;
+    for i in 1..(n + 1) {
+        if i % 10 == 0 {
+            continue;
+        }
 
-    let mut max_ditit_num = n;
-    while max_ditit_num > 9 {
-        max_ditit_num /= 10;
+        let d1 = i % 10;
+        let mut d10 = i;
+        while d10 > 9 {
+            d10 /= 10;
+        }
+
+        let key = (d1 + d10 * 10) as usize;
+        // eprintln!("i:{}, key; {}", i, key);
+        comb[key] += 1;
     }
 
-    for d in 1..(digits + 1) {
-        let mid = calc_conbination(1, d);
-        ans = (max_ditit_num * mid + 9) * ans;
-    }
+    let mut ans = 0;
 
-    // ans = mid + ((mid * ans * max_ditit_num) as f64 / 9.0) as u64;
+    // let mut idx = 1;
+    let mut is_visits = vec![false; 100];
+    for (idx, c) in comb.iter().enumerate() {
+        if is_visits[idx as usize] {
+            continue;
+        }
+
+        if *c > 0 {
+            // eprintln!(
+            //     "idx + 1: {}, comb: {}, +{}",
+            //     idx + 1,
+            //     c,
+            //     max(0, (c * (c - 1) / 2) + c as u64)
+            // );
+
+            let d1 = (idx) % 10;
+            let mut d10 = idx;
+            while d10 > 9 {
+                d10 /= 10;
+            }
+            let inv_idx = (d1 * 10 + d10 * 1) as usize;
+
+            ans += comb[inv_idx as usize] * c;
+            // eprintln!(
+            //     "idx: {}, inv_idx: {}, c: {}, c_inv: {}",
+            //     idx, inv_idx, c, comb[inv_idx as usize]
+            // );
+
+            // is_visits[idx] = true;
+            // is_visits[inv_idx] = true;
+        }
+    }
 
     println!("{}", ans);
-}
-
-// fn go(n: u64) -> u64 {
-//     let digits = (log10(n as f64) + 1.0) as u64;
-
-//     let mut ans = 0;
-//     for digit in 1..digits {
-//         ans += calc_conbination(10, digit);
-//     }
-
-//     let mut max_ditit_num = n;
-//     while max_ditit_num > 9 {
-//         max_ditit_num /= 10;
-//     }
-
-//     ans += calc_conbination(max_ditit_num, digits);
-
-//     return ans;
-// }
-
-fn calc_conbination(_end: u64, digits: u64) -> u64 {
-    // end: 1 -> 1, 2->2
-    if digits <= 2 {
-        return 1;
-    }
-
-    let multi = pow(10 as f64, (digits - 1) as f64) as u64;
-
-    return multi;
 }
