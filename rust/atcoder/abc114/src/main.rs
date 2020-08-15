@@ -1,5 +1,6 @@
 // -*- coding:utf-8-unix -*-
 
+#[macro_use]
 extern crate lazy_static;
 
 // use proconio::derive_readable;
@@ -27,65 +28,67 @@ pub fn read<T: FromStr>() -> T {
 //abc114-C
 // #[fastout]
 fn main() {
-    input![n: usize];
+    input![n_input: usize];
+    n_input;
 
-    let mut is_num7 = vec![0; n + 1];
-    let mut is_num5 = vec![0; n + 1];
-    let mut is_num3 = vec![0; n + 1];
+    let mut num753_cand: Vec<usize> = Vec::new();
+
+    go(0, 0, 3, &mut num753_cand, n_input);
+    go(0, 0, 5, &mut num753_cand, n_input);
+    go(0, 0, 7, &mut num753_cand, n_input);
 
     let mut ans = 0;
+    for i in num753_cand.iter() {
+        let i_str = i.to_string();
 
-    // eprintln!("{}", n);
-    for i in 1..(n + 1) {
-        if i < 10 {
-            if i != 7 && i != 5 && i != 3 {
-            } else {
-                match i {
-                    3 => is_num3[i] = 1,
-                    5 => is_num5[i] = 1,
-                    7 => is_num7[i] = 1,
-                    _ => panic!("not"),
+        let mut is_753 = true;
+        let mut counts = vec![0; 3];
+        for c in i_str.chars() {
+            if c != '7' || c != '5' || c != '3' {}
+
+            match c {
+                '7' => counts[0] += 1,
+                '5' => counts[1] += 1,
+                '3' => counts[2] += 1,
+                _ => {
+                    is_753 = false;
+                    break;
                 }
             }
-        } else {
-            let mut head_ditit = i;
-            let mut d = 0;
-            while head_ditit >= 10 {
-                head_ditit /= 10;
-                d += 1;
-            }
+        }
 
-            let rest = i - head_ditit * 10usize.pow(d);
-            is_num3[i] = is_num3[rest];
-            is_num5[i] = is_num5[rest];
-            is_num7[i] = is_num7[rest];
+        if !is_753 {
+            continue;
+        }
 
-            match head_ditit {
-                3 => is_num3[i] += 1,
-                5 => is_num5[i] += 1,
-                7 => is_num7[i] += 1,
-                _ => {}
-            }
-
-            if d + 1 >= 3
-                && is_num3[i] > 0
-                && is_num5[i] > 0
-                && is_num7[i] > 0
-                && (is_num3[i] + is_num5[i] + is_num7[i] == d + 1)
-            {
-                // eprintln!(
-                //     "{}, {}d, {}, {}, {}",
-                //     i,
-                //     d + 1,
-                //     is_num3[i],
-                //     is_num5[i],
-                //     is_num7[i]
-                // );
-                ans += 1;
-            }
+        if counts.iter().all(|c| *c > 0) {
+            ans += 1;
         }
     }
-    // eprintln!("{}", std::usize::MAX);
 
     println!("{}", ans);
+}
+
+fn go(mid: usize, d: usize, use_num: usize, num753_cand: &mut Vec<usize>, n: usize) {
+    if mid > n {
+        return;
+    }
+
+    let mut fact = 1;
+    for _ in 0..d {
+        fact *= 10;
+    }
+
+    let plus = fact * use_num;
+    let new_mid = mid + plus;
+
+    if new_mid > n {
+        return;
+    }
+
+    num753_cand.push(new_mid);
+
+    go(new_mid, d + 1, 3, num753_cand, n);
+    go(new_mid, d + 1, 5, num753_cand, n);
+    go(new_mid, d + 1, 7, num753_cand, n);
 }
