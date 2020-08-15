@@ -25,70 +25,36 @@ pub fn read<T: FromStr>() -> T {
     token.parse().ok().expect("failed to parse token")
 }
 
-//abc114-C
-// #[fastout]
+//abc042-C
+#[fastout]
 fn main() {
-    input![n_input: usize];
-    n_input;
+    let mut n: u64 = read();
+    let k = read();
 
-    let mut num753_cand: Vec<usize> = Vec::new();
+    let mut d = Vec::new();
+    for _ in 0..k {
+        d.push(read());
+    }
 
-    go(0, 0, 3, &mut num753_cand, n_input);
-    go(0, 0, 5, &mut num753_cand, n_input);
-    go(0, 0, 7, &mut num753_cand, n_input);
-
-    let mut ans = 0;
-    for i in num753_cand.iter() {
-        let i_str = i.to_string();
-
-        let mut is_753 = true;
-        let mut counts = vec![0; 3];
-        for c in i_str.chars() {
-            if c != '7' || c != '5' || c != '3' {}
-
-            match c {
-                '7' => counts[0] += 1,
-                '5' => counts[1] += 1,
-                '3' => counts[2] += 1,
-                _ => {
-                    is_753 = false;
-                    break;
-                }
+    loop {
+        let mut mid = n;
+        let mut is_ok = true;
+        while mid > 0 {
+            let remaind = mid % 10;
+            if d.contains(&remaind) {
+                is_ok = false;
+                break;
             }
+
+            mid /= 10;
         }
 
-        if !is_753 {
-            continue;
+        if is_ok {
+            println!("{}", n);
+            return;
         }
-
-        if counts.iter().all(|c| *c > 0) {
-            ans += 1;
-        }
+        n += 1;
     }
-
-    println!("{}", ans);
 }
 
-fn go(mid: usize, d: usize, use_num: usize, num753_cand: &mut Vec<usize>, n: usize) {
-    if mid > n {
-        return;
-    }
-
-    let mut fact = 1;
-    for _ in 0..d {
-        fact *= 10;
-    }
-
-    let plus = fact * use_num;
-    let new_mid = mid + plus;
-
-    if new_mid > n {
-        return;
-    }
-
-    num753_cand.push(new_mid);
-
-    go(new_mid, d + 1, 3, num753_cand, n);
-    go(new_mid, d + 1, 5, num753_cand, n);
-    go(new_mid, d + 1, 7, num753_cand, n);
-}
+fn go(mid: usize, d: usize, use_num: usize, num753_cand: &mut Vec<usize>, n: usize) {}
