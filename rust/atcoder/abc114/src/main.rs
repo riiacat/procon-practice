@@ -1,5 +1,7 @@
 // -*- coding:utf-8-unix -*-
 
+extern crate lazy_static;
+
 // use proconio::derive_readable;
 use proconio::fastout;
 use proconio::input;
@@ -22,63 +24,68 @@ pub fn read<T: FromStr>() -> T {
     token.parse().ok().expect("failed to parse token")
 }
 
-//abc152-D
-#[fastout]
+//abc114-C
+// #[fastout]
 fn main() {
-    input![n: u64];
+    input![n: usize];
 
-    let mut comb = vec![0; 100];
-
-    for i in 1..(n + 1) {
-        if i % 10 == 0 {
-            continue;
-        }
-
-        let d1 = i % 10;
-        let mut d10 = i;
-        while d10 > 9 {
-            d10 /= 10;
-        }
-
-        let key = (d1 + d10 * 10) as usize;
-        // eprintln!("i:{}, key; {}", i, key);
-        comb[key] += 1;
-    }
+    let mut is_num7 = vec![0; n + 1];
+    let mut is_num5 = vec![0; n + 1];
+    let mut is_num3 = vec![0; n + 1];
 
     let mut ans = 0;
 
-    // let mut idx = 1;
-    let mut is_visits = vec![false; 100];
-    for (idx, c) in comb.iter().enumerate() {
-        if is_visits[idx as usize] {
-            continue;
-        }
-
-        if *c > 0 {
-            // eprintln!(
-            //     "idx + 1: {}, comb: {}, +{}",
-            //     idx + 1,
-            //     c,
-            //     max(0, (c * (c - 1) / 2) + c as u64)
-            // );
-
-            let d1 = (idx) % 10;
-            let mut d10 = idx;
-            while d10 > 9 {
-                d10 /= 10;
+    // eprintln!("{}", n);
+    for i in 1..(n + 1) {
+        if i < 10 {
+            if i != 7 && i != 5 && i != 3 {
+            } else {
+                match i {
+                    3 => is_num3[i] = 1,
+                    5 => is_num5[i] = 1,
+                    7 => is_num7[i] = 1,
+                    _ => panic!("not"),
+                }
             }
-            let inv_idx = (d1 * 10 + d10 * 1) as usize;
+        } else {
+            let mut head_ditit = i;
+            let mut d = 0;
+            while head_ditit >= 10 {
+                head_ditit /= 10;
+                d += 1;
+            }
 
-            ans += comb[inv_idx as usize] * c;
-            // eprintln!(
-            //     "idx: {}, inv_idx: {}, c: {}, c_inv: {}",
-            //     idx, inv_idx, c, comb[inv_idx as usize]
-            // );
+            let rest = i - head_ditit * 10usize.pow(d);
+            is_num3[i] = is_num3[rest];
+            is_num5[i] = is_num5[rest];
+            is_num7[i] = is_num7[rest];
 
-            // is_visits[idx] = true;
-            // is_visits[inv_idx] = true;
+            match head_ditit {
+                3 => is_num3[i] += 1,
+                5 => is_num5[i] += 1,
+                7 => is_num7[i] += 1,
+                _ => {}
+            }
+
+            if d + 1 >= 3
+                && is_num3[i] > 0
+                && is_num5[i] > 0
+                && is_num7[i] > 0
+                && (is_num3[i] + is_num5[i] + is_num7[i] == d + 1)
+            {
+                // eprintln!(
+                //     "{}, {}d, {}, {}, {}",
+                //     i,
+                //     d + 1,
+                //     is_num3[i],
+                //     is_num5[i],
+                //     is_num7[i]
+                // );
+                ans += 1;
+            }
         }
     }
+    // eprintln!("{}", std::usize::MAX);
 
     println!("{}", ans);
 }
