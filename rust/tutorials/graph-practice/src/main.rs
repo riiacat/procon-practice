@@ -11,8 +11,15 @@ use libm::*;
 use std::cmp::*;
 use std::collections::BinaryHeap;
 use std::io::*;
+use std::ops::Range;
 use std::str::FromStr;
 use superslice::*;
+
+use petgraph::algo::{dijkstra, min_spanning_tree};
+use petgraph::data::FromElements;
+use petgraph::dot::{Config, Dot};
+use petgraph::graph::{DiGraph, NodeIndex, UnGraph};
+use petgraph::visit;
 
 pub fn read<T: FromStr>() -> T {
     let stdin = stdin();
@@ -27,68 +34,45 @@ pub fn read<T: FromStr>() -> T {
 }
 
 //abc160-E
-#[fastout]
+// #[fastout]
 fn main() {
-    input![
-        X: usize,
-        Y: usize,
-        a: usize,
-        b: usize,
-        c: usize,
-        p_input: [i64; a],
-        q_input: [i64; b],
-        r_input: [i64; c],
-    ];
+    // Create an undirected graph with `i32` nodes and edges with `()` associated data.
+    // let mut g = UnGraph::<i32, ()>::from_edges(&[(1, 2), (2, 3), (3, 4), (1, 4)]);
+    let mut g = UnGraph::new_undirected();
 
-    let mut p = BinaryHeap::from(p_input);
-    let mut q = BinaryHeap::from(q_input);
-    let mut r = BinaryHeap::from(r_input);
+    let nodes: Vec<_> = Range { start: 0, end: 10 }
+        .map(|i: i32| g.add_node(i.to_string()))
+        .collect();
 
-    // let read_closure = |v: &mut BinaryHeap<i128>, count| {
-    //     for _ in 0..count {
-    //         v.push(read());
-    //     }
-    // };
+    let _: Vec<_> = [(0, 1), (0, 2), (1, 3), (1, 4), (2, 5), (2, 6), (0, 9)]
+        .iter()
+        .map(|(f, t)| {
+            g.add_edge(nodes[*f], nodes[*t], 1);
+        })
+        .collect();
+    // let n = g.add_node(5);
+    // g.add_edge(1.into(), 5.into(), ());
 
-    // read_closure(&mut p, a);
-    // read_closure(&mut q, b);
-    // read_closure(&mut r, c);
+    let mut dfs = visit::Bfs::new(&g, nodes[0]);
 
-    let (mut x, mut y, mut z) = (0, 0, 0);
-
-    let mut ans = 0;
-    while x + y + z < X + Y {
-        let a_max = if x == X { -1 } else { *p.peek().unwrap() };
-        let b_max = if y == Y { -1 } else { *q.peek().unwrap() };
-        let c_max = *r.peek().unwrap_or(&-1);
-
-        if a_max >= b_max && a_max >= c_max {
-            ans += a_max;
-            x += 1;
-            p.pop();
-        } else if b_max >= c_max && b_max >= a_max {
-            ans += b_max;
-            y += 1;
-            q.pop();
-        } else if c_max >= a_max && c_max >= b_max {
-            ans += c_max;
-            z += 1;
-            r.pop();
-        }
+    while let Some(nx) = dfs.next(&g) {
+        // let a = g;
+        println!("{:?}", nx);
     }
 
-    println!("{}", ans);
+    println!("{:?}", g);
+
+    let node_map = dijkstra(&g, nodes[0], Some(nodes[5]), |_| 1);
+    node_map.iter().for_each(|item| {
+        println!("{:?}", item);
+    });
+
+    // // Find the shortest path from `1` to `4` using `1` as the cost for every edge.
+    // let node_map = dijkstra(&g, 1.into(), Some(4.into()), |_| 1);
+    // assert_eq!(&1i32, node_map.get(&NodeIndex::new(4)).unwrap());
+
+    // // Get the minimum spanning tree of the graph as a new graph, and check that
+    // // one edge was trimmed.
+    // let mst = UnGraph::<_, _>::from_elements(min_spanning_tree(&g));
+    // assert_eq!(g.raw_edges().len() - 1, mst.raw_edges().len());
 }
-
-fn go(mid: usize, d: usize, use_num: usize, num753_cand: &mut Vec<usize>, n: usize) {}
-
-// use lazy_static::lazy_static;
-// use std::sync::Mutex;
-
-// lazy_static! {
-//     static ref VALUES: Mutex<Vec<i32>> = Mutex::default();
-// }
-
-// let mut values = VALUES.lock().unwrap();
-// values.extend_from_slice(&[1, 2, 3, 4]);
-// assert_eq!(&*values, &[1, 2, 3, 4]);
