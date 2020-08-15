@@ -33,7 +33,6 @@ pub fn read<T: FromStr>() -> T {
     token.parse().ok().expect("failed to parse token")
 }
 
-//abc160-E
 // #[fastout]
 fn main() {
     // Create an undirected graph with `i32` nodes and edges with `()` associated data.
