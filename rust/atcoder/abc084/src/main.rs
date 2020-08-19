@@ -31,93 +31,63 @@ pub fn read<T: FromStr>() -> T {
     token.parse().ok().expect("failed to parse token")
 }
 
-//abc175-D
+//abc084-D
 // #[fastout]
 fn main() {
-    input![n: usize, k: usize, p: [usize; n], c: [i128; n]];
-    let p: Vec<_> = p.iter().map(|a| a - 1).collect();
+    input![q: usize, lrs: [(i64, i64); q]];
 
-    let mut cycles = Vec::new();
-    let mut is_visited = vec![false; n];
+    let mut primes = Vec::new();
+    primes.push(2);
+    let mut comsum_like2017s: Vec<usize> = vec![0; 100001];
+    // let mut comsum_like2017s = vec![0; 100];
 
-    while !is_visited.iter().all(|&a| a) {
-        // eprintln!("new cycle before {:?}", cycles);
-        let new_cycle = Vec::new();
-        cycles.push(new_cycle);
+    // for i in 3..(100) {
+    for i in 3..(100000 + 1) {
+        let mut is_prime = true;
 
-        let (head_idx, _) = is_visited
-            .iter()
-            .enumerate()
-            .find(|(_idx, is_visit)| !*is_visit)
-            .unwrap();
-        is_visited[head_idx] = true;
-        let new_cycle = cycles.last_mut().unwrap();
-        new_cycle.push(head_idx);
-
-        let mut current = head_idx;
-        loop {
-            let next = p[current];
-            if next == head_idx {
-                break;
-            }
-            new_cycle.push(next);
-            is_visited[next] = true;
-            current = next;
-        }
-    }
-
-    //eprintln!("cycles: {:?}", cycles);
-
-    let mut maxes = Vec::new();
-    for cycle in cycles.iter() {
-        let can_cycle_num = (k / cycle.len()) as i128;
-        let mut remaind = k % cycle.len();
-        let cycle_sum: i128 = cycle.iter().map(|x| c[*x]).sum();
-        // eprintln!(
-        //     "cycle_sum: {:?}, cycle: {:?}, cs: {:?}",
-        //     cycle_sum,
-        //     cycle,
-        //     cycle.iter().map(|x| c[*x]).collect::<Vec<_>>()
-        // );
-
-        let mut max_incycle: i128 = 0;
-        if cycle_sum > 0 {
-            max_incycle += can_cycle_num * cycle_sum;
-        }
-
-        let mut max_of_range = None;
-        if can_cycle_num > 0 && remaind == 0 {
-            remaind = cycle.len();
-        }
-
-        for s in 0..cycle.len() {
-            let mut sum_ranges = vec![0; remaind];
-            // let mut sum_range = 0;
-            for i in s..(s + remaind) {
-                if i - s == 0 {
-                    sum_ranges[i - s] = c[cycle[i % cycle.len()]];
-                } else {
-                    // eprintln!("{},{}", i - s, i % cycle.len());
-                    sum_ranges[i - s] = sum_ranges[i - s - 1] + c[cycle[i % cycle.len()]];
+        if i % 2 == 0 {
+            is_prime = false;
+        } else {
+            for prime in primes.iter() {
+                if *prime > (sqrt(i as f64) as usize) {
+                    break;
+                }
+                if i % prime == 0 {
+                    is_prime = false;
+                    break;
                 }
             }
-            //eprintln!("{}, {}, sum_range: {}", l, s, sum_range);
-            max_of_range = if let Some(max_of_range) = max_of_range {
-                Some(max(*sum_ranges.iter().max().unwrap(), max_of_range))
-            } else {
-                Some(*sum_ranges.iter().max().unwrap())
-            };
+        }
+        if is_prime {
+            primes.push(i);
         }
 
-        max_incycle += max_of_range.unwrap();
-        maxes.push(max_incycle);
+        let is_contain_div2 = primes.binary_search(&((i + 1) / 2)).is_ok();
+
+        if is_prime && is_contain_div2 {
+            comsum_like2017s[i] = comsum_like2017s[i - 2] + 1;
+        } else {
+            comsum_like2017s[i] = comsum_like2017s[i - 2];
+        }
     }
 
-    //eprintln!("maxes: {:?}", maxes);
-    println!("{}", maxes.iter().max().unwrap());
+    // let mut v: Vec<_> = primes.iter().collect();
+    // v.sort();
+    // eprintln!("{:?}", v);
+    // let a = comsum_like2017s.as_slice();
+    // eprintln!("{:?}", (&a[..100]).iter().enumerate().collect::<Vec<_>>());
+
+    // println!("{}", maxes.iter().max().unwrap());
+
+    for (l, r) in lrs.iter() {
+        println!(
+            "{}",
+            comsum_like2017s[*r as usize] - comsum_like2017s[max(l - 2, 0) as usize]
+        );
+    }
 }
 
-fn go(mid: usize, d: usize, use_num: usize, num753_cand: &mut Vec<usize>, n: usize) {}
+// fn go(mid: usize, d: usize, use_num: usize, num753_cand: &mut Vec<usize>, n: usize) {}
 
 // use lazy_static::lazy_static;
 // use std::sync::Mutex;
@@ -129,6 +99,3 @@ fn go(mid: usize, d: usize, use_num: usize, num753_cand: &mut Vec<usize>, n: usi
 // let mut values = VALUES.lock().unwrap();
 // values.extend_from_slice(&[1, 2, 3, 4]);
 // assert_eq!(&*values, &[1, 2, 3, 4]);
-
-// -100000000
-//  1000000000
