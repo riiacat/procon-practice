@@ -31,60 +31,87 @@ pub fn read<T: FromStr>() -> T {
     token.parse().ok().expect("failed to parse token")
 }
 
-//abc084-D
+const MOD: usize = 1000000000 + 7;
+
+//abc156-D
 // #[fastout]
 fn main() {
-    input![q: usize, lrs: [(i64, i64); q]];
+    input![n_seed: usize, a_f: usize, b: usize];
 
-    let mut primes = Vec::new();
-    primes.push(2);
-    let mut comsum_like2017s: Vec<usize> = vec![0; 100001];
-    // let mut comsum_like2017s = vec![0; 100];
+    // let mut v = 2;
+    // loop {
+    //     v *= 2;
+    //     v = v % LargeNum;
+    //     println!("{}", v);
+    //     if v % LargeNum == 2 {
+    //         // println!("{}: {}", v, v % LargeNum);
+    //         break;
+    //     }
+    // }
+    // eprintln!("usize.max: {}", std::usize::MAX);
+    let multi_num = log2(n_seed as f64) as usize;
 
-    // for i in 3..(100) {
-    for i in 3..(100000 + 1) {
-        let mut is_prime = true;
+    let mut ans = 2;
 
-        if i % 2 == 0 {
-            is_prime = false;
-        } else {
-            for prime in primes.iter() {
-                if *prime > (sqrt(i as f64) as usize) {
-                    break;
-                }
-                if i % prime == 0 {
-                    is_prime = false;
-                    break;
-                }
-            }
+    let mut n = n_seed;
+    let mut a = 2;
+    let mut x = 1;
+    while n > 0 {
+        eprintln!("n, x, a, n&1= {},{},{},{}", n, x, a, n & 1);
+        //全てのbitが捨てられるまで。
+        if n & 1 == 1 {
+            //1番右のbitが1のとき。
+            x = (x * a) % MOD;
         }
-        if is_prime {
-            primes.push(i);
-        }
-
-        let is_contain_div2 = primes.binary_search(&((i + 1) / 2)).is_ok();
-
-        if is_prime && is_contain_div2 {
-            comsum_like2017s[i] = comsum_like2017s[i - 2] + 1;
-        } else {
-            comsum_like2017s[i] = comsum_like2017s[i - 2];
-        }
+        a = a * a % MOD;
+        n >>= 1; //bit全体を右に1つシフトして一番右を捨てる。
     }
 
-    // let mut v: Vec<_> = primes.iter().collect();
-    // v.sort();
-    // eprintln!("{:?}", v);
-    // let a = comsum_like2017s.as_slice();
-    // eprintln!("{:?}", (&a[..100]).iter().enumerate().collect::<Vec<_>>());
+    ans = x;
+    eprintln!("2^{} = {},", n_seed, x);
+    ans = (ans + MOD - 1) % MOD; //0本の組み合わせは抜く
 
-    // println!("{}", maxes.iter().max().unwrap());
+    // let mut fac = vec![0; 200000 + 1];
+    // let mut finv = vec![0; 200000 + 1];
+    // let mut inv = vec![0; 200000 + 1];
+    // fac[0] = 1;
+    // fac[1] = 1;
+    // finv[0] = 1;
+    // finv[1] = 1;
+    // inv[1] = 1;
+    // for i in 2..200000 + 1 {
+    //     fac[i] = fac[i - 1] * i % MOD;
+    //     inv[i] = MOD - inv[MOD % i] * (MOD / i) % MOD;
+    //     finv[i] = finv[i - 1] * inv[i] % MOD;
+    // }
 
-    for (l, r) in lrs.iter() {
-        println!(
-            "{}",
-            comsum_like2017s[*r as usize] - comsum_like2017s[max(l - 2, 0) as usize]
-        );
-    }
+    // let com = |n, k| {
+    //     if n < k {
+    //         return 0;
+    //     }
+    //     // if n < 0 || k < 0 {
+    //     //     return 0;
+    //     // }
+
+    //     return fac[n] * (finv[k] * finv[n - k] % MOD) % MOD;
+    // };
+
+    // eprintln!("com({},{})={}", n_seed, a_f, com(n_seed, a_f));
+    // eprintln!("com({},{})={}", n_seed, b, com(n_seed, b));
+    // ans = ((ans + MOD) - com(n_seed, a_f)) % MOD;
+    // ans = ((ans + MOD) - com(n_seed, b)) % MOD;
+
+    // println!("{}", ans);
+    // // // # n!^-1 の計算
+    // // inv = pow(f, MOD - 2, MOD)
+    // // // # n!^-1 - 1!^-1 の計算
+    // // invs = [1] * (n + 1)
+    // // invs[n] = inv
+    // // for m in range(n, 1, -1):
+    // //     inv *= m
+    // //     inv %= MOD
+    // //     invs[m - 1] = inv
+    // // //ans - c_n_a - c_n_b;
 }
 
 // fn go(mid: usize, d: usize, use_num: usize, num753_cand: &mut Vec<usize>, n: usize) {}
