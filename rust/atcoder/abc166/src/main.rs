@@ -31,30 +31,40 @@ pub fn read<T: FromStr>() -> T {
     token.parse().ok().expect("failed to parse token")
 }
 
-//abc153-E
+//abc166-E
 // #[fastout]
 fn main() {
-    input![h: i64, n: usize, ab: [(i64, i64); n]];
+    input![n: usize, a: [i64; n]];
 
-    let a: Vec<_> = ab.iter().map(|(a, _)| a).collect();
-    let b: Vec<_> = ab.iter().map(|(_, b)| b).collect();
+    let mut l = HashMap::new();
+    let mut r = HashMap::new();
 
-    let mut dp = vec![std::usize::MAX; h as usize + 1];
-
-    for hh in 0..(h + 1) as usize {
-        if hh == 0 {
-            dp[hh] = 0;
+    for i in 0..n {
+        let la = a[i] + (i + 1) as i64;
+        if let Some(v) = l.get_mut(&la) {
+            *v += 1;
+        } else {
+            l.insert(la, 1 as u64);
         }
 
-        for m_idx in 0..n as usize {
-            dp[hh] = min(
-                dp[hh],
-                dp[max(hh as i64 - a[m_idx], 0) as usize] + *b[m_idx] as usize,
-            );
+        let ra = (i + 1) as i64 - a[i];
+        if let Some(v) = r.get_mut(&ra) {
+            *v += 1;
+        } else {
+            r.insert(ra, 1 as u64);
         }
     }
 
-    println!("{}", dp[h as usize]);
+    let mut ans = 0;
+    for (la, num) in l.iter() {
+        if let Some(num_r) = r.get(la) {
+            ans += num * num_r;
+        } else {
+        }
+    }
+
+    println!("{}", ans);
+    eprintln!("{}", log10(std::u64::MAX as f64));
 }
 
 // use lazy_static::lazy_static;
