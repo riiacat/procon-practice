@@ -31,93 +31,31 @@ pub fn read<T: FromStr>() -> T {
     token.parse().ok().expect("failed to parse token")
 }
 
-//abc175-D
+//abc153-E
 // #[fastout]
 fn main() {
-    input![n: usize, k: usize, p: [usize; n], c: [i128; n]];
-    let p: Vec<_> = p.iter().map(|a| a - 1).collect();
+    input![h: i64, n: usize, ab: [(i64, i64); n]];
 
-    let mut cycles = Vec::new();
-    let mut is_visited = vec![false; n];
+    let a: Vec<_> = ab.iter().map(|(a, _)| a).collect();
+    let b: Vec<_> = ab.iter().map(|(_, b)| b).collect();
 
-    while !is_visited.iter().all(|&a| a) {
-        // eprintln!("new cycle before {:?}", cycles);
-        let new_cycle = Vec::new();
-        cycles.push(new_cycle);
+    let mut dp = vec![std::usize::MAX; h as usize + 1];
 
-        let (head_idx, _) = is_visited
-            .iter()
-            .enumerate()
-            .find(|(_idx, is_visit)| !*is_visit)
-            .unwrap();
-        is_visited[head_idx] = true;
-        let new_cycle = cycles.last_mut().unwrap();
-        new_cycle.push(head_idx);
+    for hh in 0..(h + 1) as usize {
+        if hh == 0 {
+            dp[hh] = 0;
+        }
 
-        let mut current = head_idx;
-        loop {
-            let next = p[current];
-            if next == head_idx {
-                break;
-            }
-            new_cycle.push(next);
-            is_visited[next] = true;
-            current = next;
+        for m_idx in 0..n as usize {
+            dp[hh] = min(
+                dp[hh],
+                dp[max(hh as i64 - a[m_idx], 0) as usize] + *b[m_idx] as usize,
+            );
         }
     }
 
-    //eprintln!("cycles: {:?}", cycles);
-
-    let mut maxes = Vec::new();
-    for cycle in cycles.iter() {
-        let can_cycle_num = (k / cycle.len()) as i128;
-        let mut remaind = k % cycle.len();
-        let cycle_sum: i128 = cycle.iter().map(|x| c[*x]).sum();
-        // eprintln!(
-        //     "cycle_sum: {:?}, cycle: {:?}, cs: {:?}",
-        //     cycle_sum,
-        //     cycle,
-        //     cycle.iter().map(|x| c[*x]).collect::<Vec<_>>()
-        // );
-
-        let mut max_incycle: i128 = 0;
-        if cycle_sum > 0 {
-            max_incycle += can_cycle_num * cycle_sum;
-        }
-
-        let mut max_of_range = None;
-        if can_cycle_num > 0 && remaind == 0 {
-            remaind = cycle.len();
-        }
-
-        for s in 0..cycle.len() {
-            let mut sum_ranges = vec![0; remaind];
-            // let mut sum_range = 0;
-            for i in s..(s + remaind) {
-                if i - s == 0 {
-                    sum_ranges[i - s] = c[cycle[i % cycle.len()]];
-                } else {
-                    // eprintln!("{},{}", i - s, i % cycle.len());
-                    sum_ranges[i - s] = sum_ranges[i - s - 1] + c[cycle[i % cycle.len()]];
-                }
-            }
-            //eprintln!("{}, {}, sum_range: {}", l, s, sum_range);
-            max_of_range = if let Some(max_of_range) = max_of_range {
-                Some(max(*sum_ranges.iter().max().unwrap(), max_of_range))
-            } else {
-                Some(*sum_ranges.iter().max().unwrap())
-            };
-        }
-
-        max_incycle += max_of_range.unwrap();
-        maxes.push(max_incycle);
-    }
-
-    //eprintln!("maxes: {:?}", maxes);
-    println!("{}", maxes.iter().max().unwrap());
+    println!("{}", dp[h as usize]);
 }
-
-fn go(mid: usize, d: usize, use_num: usize, num753_cand: &mut Vec<usize>, n: usize) {}
 
 // use lazy_static::lazy_static;
 // use std::sync::Mutex;
