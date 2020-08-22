@@ -13,7 +13,7 @@ use proconio::input;
 // use std::convert::TryInto;
 use libm::*;
 use std::cmp::*;
-use std::collections::{BinaryHeap, HashMap, HashSet};
+use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 use std::io::*;
 use std::ops::Range;
 use std::str::FromStr;
@@ -31,40 +31,65 @@ pub fn read<T: FromStr>() -> T {
     token.parse().ok().expect("failed to parse token")
 }
 
-//abc166-E
+//abc088-D
 // #[fastout]
 fn main() {
-    input![n: usize, a: [i64; n]];
+    input![h: usize, w: usize, s: [String; h]];
 
-    let mut l = HashMap::new();
-    let mut r = HashMap::new();
+    // let a: String = String::new("abc");
+    // let b = ;
 
-    for i in 0..n {
-        let la = a[i] + (i + 1) as i64;
-        if let Some(v) = l.get_mut(&la) {
-            *v += 1;
-        } else {
-            l.insert(la, 1 as u64);
-        }
-
-        let ra = (i + 1) as i64 - a[i];
-        if let Some(v) = r.get_mut(&ra) {
-            *v += 1;
-        } else {
-            r.insert(ra, 1 as u64);
+    let mut num_white_without_se = 0;
+    for i in 0..w {
+        for j in 0..h {
+            if s[j].chars().nth(i).unwrap() == '.' {
+                eprintln!("num_white_without_se: {}", num_white_without_se);
+                num_white_without_se += 1;
+            } else if s[j].chars().nth(i).unwrap() == '#' {
+            }
         }
     }
 
-    let mut ans = 0;
-    for (la, num) in l.iter() {
-        if let Some(num_r) = r.get(la) {
-            ans += num * num_r;
-        } else {
+    let mut q = VecDeque::new();
+
+    let mut is_visits = vec![vec![false; w]; h];
+    //h,w,depth
+    q.push_back(((0, 0), 1));
+    is_visits[0][0] = true;
+    let mut target = None;
+
+    while !q.is_empty() {
+        let current = q.pop_front().unwrap();
+        let (current_pos, d) = &current;
+
+        if *current_pos == (h - 1, w - 1) {
+            target = Some(current);
+            break;
+        }
+
+        let (c_h, c_w) = *current_pos;
+        if c_h > 0 && s[c_h - 1].chars().nth(c_w).unwrap() != '#' && !is_visits[c_h - 1][c_w] {
+            q.push_back(((c_h - 1, c_w), *d + 1));
+            is_visits[c_h - 1][c_w] = true;
+        }
+        if c_h < h - 1 && s[c_h + 1].chars().nth(c_w).unwrap() != '#' && !is_visits[c_h + 1][c_w] {
+            q.push_back(((c_h + 1, c_w), *d + 1));
+            is_visits[c_h + 1][c_w] = true;
+        }
+
+        if c_w > 0 && s[c_h].chars().nth(c_w - 1).unwrap() != '#' && !is_visits[c_h][c_w - 1] {
+            q.push_back(((c_h, c_w - 1), *d + 1));
+            is_visits[c_h][c_w - 1] = true;
+        }
+        if c_w < w - 1 && s[c_h].chars().nth(c_w + 1).unwrap() != '#' && !is_visits[c_h][c_w + 1] {
+            q.push_back(((c_h, c_w + 1), *d + 1));
+            is_visits[c_h][c_w + 1] = true;
         }
     }
 
+    eprintln!("num_white_without_se: {}", num_white_without_se);
+    let ans = target.map(|(_, d)| num_white_without_se - d).unwrap_or(-1);
     println!("{}", ans);
-    eprintln!("{}", log10(std::u64::MAX as f64));
 }
 
 // use lazy_static::lazy_static;
