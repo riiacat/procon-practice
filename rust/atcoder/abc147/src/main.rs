@@ -11,16 +11,16 @@ use num_traits::Pow;
 use proconio::fastout;
 use proconio::input;
 // use std::convert::TryInto;
+use itertools::concat;
+use lazy_static::lazy_static;
 use libm::*;
 use std::cmp::*;
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 use std::io::*;
 use std::ops::Range;
 use std::str::FromStr;
-use superslice::*;
-
-use lazy_static::lazy_static;
 use std::sync::Mutex;
+use superslice::*;
 
 pub fn read<T: FromStr>() -> T {
     let stdin = stdin();
@@ -42,15 +42,49 @@ pub fn read<T: FromStr>() -> T {
 //abc147-C
 // #[fastout]
 fn main() {
-    input![
-        h: usize,
-        w: usize,
-        ch: usize,
-        cw: usize,
-        dH: usize,
-        dW: usize,
-        s: [String; h]
-    ];
+    input![n: usize];
+
+    let mut a_nums = Vec::new();
+    let mut a_s = Vec::new();
+    for _ in 0..n {
+        input![a_num: usize, a: [(usize, usize); a_num]];
+        a_nums.push(a_num);
+        a_s.push(a);
+    }
+
+    let a_s = a_s;
+
+    let mut ans = -1;
+    for i in 0..2 ^ (n + 1) {
+        let mut clues = vec![None; n];
+        let mut is_valid = true;
+
+        let mut flag = i;
+        let mut new_ans = 0;
+        let mut man_idx = 0;
+        while flag != 0 {
+            let valid_clues 
+            if flag % 2 != 0 {
+                new_ans += 1;
+
+                
+            }
+
+            flag /= 2;
+            man_idx += 1;
+        }
+
+        if is_valid {
+            eprintln!("flag:{:#019b},  {}", i, new_ans);
+            eprintln!("{:?}", clues);
+        }
+
+        if is_valid {
+            ans = max(ans, new_ans);
+        }
+    }
+
+    println!("{}", ans);
 }
 
 // let mut values = VALUES.lock().unwrap();
