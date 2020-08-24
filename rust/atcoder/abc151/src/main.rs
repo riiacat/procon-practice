@@ -11,6 +11,7 @@ use num_traits::Pow;
 use proconio::fastout;
 use proconio::input;
 // use std::convert::TryInto;
+use ascii::{AsciiChar, AsciiString};
 use itertools::concat;
 use lazy_static::lazy_static;
 use libm::*;
@@ -42,44 +43,68 @@ pub fn read<T: FromStr>() -> T {
 //abc147-C
 // #[fastout]
 fn main() {
-    input![n: usize];
+    input![h: usize, w: usize, s: [String; h]];
 
-    let mut a_nums = Vec::new();
-    let mut a_s = Vec::new();
-    for _ in 0..n {
-        input![a_num: usize, a: [(usize, usize); a_num]];
-        a_nums.push(a_num);
-        a_s.push(a);
+    let s: Vec<_> = s
+        .into_iter()
+        .map(|s: String| AsciiString::from_str(&s[..]).unwrap())
+        .collect();
+
+    let mut maze = unsafe { vec![vec![AsciiChar::from_ascii_unchecked('#' as u8); w + 2]; h + 2] };
+    // eprintln!("before init");
+
+    // let mut is_visit = vec![vec![false; w]; h];
+    for hh in 1..(h + 1) {
+        for ww in 1..(w + 1) {
+            maze[hh][ww] = s[hh - 1][ww - 1];
+            if maze[hh][ww] == '#' {
+                // is_visit[hh - 1][ww - 1] = true;
+            }
+        }
     }
 
-    let a_s = a_s;
-
+    // eprintln!("after init");
+    let can_moves: [(i64, i64); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
     let mut ans = -1;
-    for i in 0..2 ^ (n + 1) {
-        let mut clues = vec![None; n];
-        let mut is_valid = true;
-
-        let mut flag = i;
-        let mut new_ans = 0;
-        let mut man_idx = 0;
-        while flag != 0 {
-            let valid_clues 
-            if flag % 2 != 0 {
-                new_ans += 1;
-
-                
+    for hh in 1..(h + 1) {
+        for ww in 1..(w + 1) {
+            if maze[hh][ww] == '#' {
+                continue;
             }
 
-            flag /= 2;
-            man_idx += 1;
-        }
+            // let mut is_visit: Vec<_> = is_visit.iter().map(|v| v.clone()).collect();
+            let mut dist = vec![vec![1000; w]; h];
+            let mut new_ans = -1;
+            //hh, wwをスタートにして、幅優先探索をする
+            let mut q = VecDeque::new();
+            q.push_back((hh, ww, 0));
+            // while !(q.is_empty() || is_visit.iter().all(|row| row.iter().all(|a| *a))) {
+            while !(q.is_empty()) {
+                let (hh, ww, d) = q.pop_front().unwrap();
+                // is_visit[hh - 1][ww - 1] = true;
+                dist[hh - 1][ww - 1] = d;
+                // eprintln!("{:?}", ((hh, ww), d));
+                new_ans = max(new_ans, d);
 
-        if is_valid {
-            eprintln!("flag:{:#019b},  {}", i, new_ans);
-            eprintln!("{:?}", clues);
-        }
+                for (del_h, del_w) in &can_moves {
+                    let new_h = (hh as i64 + del_h) as usize;
+                    let new_w = (ww as i64 + del_w) as usize;
 
-        if is_valid {
+                    // eprintln!("{}, {}, {}", new_h, new_w, maze[new_h][new_w]);
+                    if maze[new_h][new_w] == '#' || dist[new_h - 1][new_w - 1] < 1000 {
+                        continue;
+                    }
+
+                    q.push_back((new_h, new_w, d + 1));
+                }
+
+                // eprintln!(
+                //     "{}, {}",
+                //     q.is_empty(),
+                //     is_visit.iter().all(|row| row.iter().all(|a| *a))
+                // );
+            }
+
             ans = max(ans, new_ans);
         }
     }
