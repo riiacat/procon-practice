@@ -39,79 +39,37 @@ lazy_static! {
     static ref CHILDS: Mutex<Vec<Vec<usize>>> = Mutex::default();
 }
 
-//abc138-D
+//abc068-D
 // #[fastout]
 fn main() {
-    input![
-        n: usize,
-        q: usize,
-        ab: [(usize, usize); n - 1],
-        query: [(usize, usize); q]
-    ];
+    input![n: usize, mut ass:  [usize; n]];
 
-    {
-        let mut parents = PARENTS.lock().unwrap();
-        let mut childrens = CHILDS.lock().unwrap();
+    ass.sort();
+    let mut ans = ass.len();
 
-        parents.clear();
-        childrens.clear();
+    let pivot = ass.len();
 
-        for _ in 0..n {
-            childrens.push(Vec::new());
-            parents.push(std::usize::MAX);
+    let mut double_l = 0;
+    let mut old = 1000000000;
+    for i in 0..pivot {
+        if old == ass[i] {
+            double_l += 1;
         }
+        old = ass[i];
+    }
 
-        for (a, b) in ab.iter() {
-            let a = a - 1;
-            let b = b - 1;
-            parents[b] = a;
-            childrens[a].push(b);
+    let mut double_r = 0;
+    let mut old = 1000000000;
+    for i in pivot..ass.len() {
+        if old == ass[i] {
+            double_l += 1;
         }
+        old = ass[i];
     }
 
-    let mut deep_child_count = vec![0; n];
-
-    // go(0, &mut deep_child_count);
-
-    let mut ans = 0;
-    for (p, x) in query.iter() {
-        let p = p - 1;
-        deep_child_count[p] += x;
+    if (double_l <= double_r) {
+        //make r
     }
-
-    let mut anss = vec![std::usize::MAX; n];
-
-    go2(0, 0, &mut anss, &deep_child_count);
-
-    for ans in anss.iter() {
-        print!("{} ", ans);
-    }
-}
-
-fn go2(start: usize, plus_val: usize, anss: &mut Vec<usize>, dcc: &Vec<usize>) {
-    let childrens = CHILDS.lock().unwrap()[start].clone();
-
-    // let mut ans = plus_val;
-    for c in childrens.iter() {
-        go2(*c, plus_val + dcc[start], anss, dcc);
-    }
-
-    anss[start] = plus_val + dcc[start];
-}
-
-fn go(start: usize, dcc: &mut Vec<usize>) {
-    eprintln!("start: {}, dcc: {:?}", start, dcc);
-    // let parents = PARENTS.lock().unwrap();
-    // let mut childrens_2 =
-    let childrens = CHILDS.lock().unwrap()[start].clone();
-
-    let mut ans = 1;
-    for c in childrens.iter() {
-        go(*c, dcc);
-        ans += dcc[*c];
-    }
-
-    dcc[start] = ans;
 }
 
 // let mut values = VALUES.lock().unwrap();
