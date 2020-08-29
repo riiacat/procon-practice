@@ -40,28 +40,40 @@ lazy_static! {
 }
 
 //abc163-D
-// #[fastout]
-
-const MOD: usize = 1000000000 + 7;
-
+#[fastout]
 fn main() {
-    input![n: usize, k: usize];
+    input![n: usize, a: [usize; n]];
 
-    let mut ans = 0;
-    // let mut mods = vec![0; n+1];
-    // for i in 0..(n+1) + 1{
-    //     mods[i] =
-    // }
+    let a_sum_div2: usize = a.iter().sum::<usize>() / 2;
 
-    for kk in k..(n + 1) + 1 {
-        let min = (kk - 1) * kk / 2;
-        let max = kk * (2 * n - kk + 1) / 2;
-        // eprintln!("{}, {}, {}", kk, min, max);
-        let num = max - min + 1;
-        ans += num;
-        ans %= MOD;
+    let mut idx = 2;
+    let mut a1 = a_sum_div2;
+    loop {
+        if idx - 1 >= a.len() {
+            break;
+        }
+
+        a1 -= a[idx - 1];
+        idx += 2;
     }
-    println!("{}", ans);
+
+    let mut anss = vec![0; n];
+    anss[0] = a1;
+    // print!("{} ", a1);
+    for i in 1..n {
+        anss[i] = a[i - 1] - anss[i - 1];
+    }
+
+    // let ans = anss.iter().fold(String::new(), |mut mid_res, item| {
+    //     mid_res.push_str(&format!("{} ", item * 2));
+    //     mid_res
+    // });
+
+    for i in anss.iter() {
+        print!("{} ", i * 2);
+    }
+
+    // println!("{}", ans);
 }
 
 // let mut values = VALUES.lock().unwrap();
