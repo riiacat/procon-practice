@@ -41,45 +41,26 @@ lazy_static! {
 
 //abc163-D
 // #[fastout]
+
+const MOD: usize = 1000000000 + 7;
+
 fn main() {
-    input![n: usize, h: usize, ab: [(usize, usize); n]];
+    input![n: usize, k: usize];
 
-    let mut ab_sorted = Vec::new();
-    for (a, b) in ab.iter() {
-        ab_sorted.push(Reverse((true, *a)));
-        ab_sorted.push(Reverse((false, *b)));
+    let mut ans = 0;
+    // let mut mods = vec![0; n+1];
+    // for i in 0..(n+1) + 1{
+    //     mods[i] =
+    // }
+
+    for kk in k..(n + 1) + 1 {
+        let min = (kk - 1) * kk / 2;
+        let max = kk * (2 * n - kk + 1) / 2;
+        // eprintln!("{}, {}, {}", kk, min, max);
+        let num = max - min + 1;
+        ans += num;
+        ans %= MOD;
     }
-
-    ab_sorted.sort();
-
-    let mut comsum = Vec::new();
-    comsum.push(Reverse((ab_sorted[0].0).1));
-    for i in 1..(2 * n) {
-        comsum.push(Reverse((ab_sorted[i].0).1 + comsum[i - 1].0));
-    }
-
-    let mut ans = std::i64::MAX;
-    for (a, b) in ab.iter() {
-        let mut mid_ans: i64 = 0;
-        let mut h: i64 = h as i64;
-        let idx = ab_sorted.upper_bound(&Reverse((true, *a)));
-        eprintln!("{}, {:?}", a, ab_sorted);
-        eprintln!("{:?}", comsum);
-        eprintln!("{}", idx);
-
-        mid_ans += idx as i64;
-        h -= comsum[idx - 1].0 as i64;
-
-        eprintln!("rest_h: {}, mid_ans: {}", h, mid_ans);
-        if h > 0 {
-            let a = *a as i64;
-            mid_ans += h / a + if h % a != 0 { 1 } else { 0 };
-        }
-        eprintln!("mid_ans: {}", mid_ans);
-
-        ans = min(mid_ans, ans);
-    }
-
     println!("{}", ans);
 }
 
