@@ -44,34 +44,31 @@ lazy_static! {
     static ref ADJ: Mutex<Vec<Vec<usize>>> = Mutex::default();
 }
 
-// const MOD: usize = 9997063;
-// const MOD: usize = 100_000_000_ + 7;
+const MOD: i64 = 1000_000_000_000_000 + 7;
 
 //abc177-D
 // #[fastout]
 fn main() {
     input![n: usize, a: [usize; n]];
 
-    // let a: u
-    let mut product = 1;
+    let mut product = 1.to_bigint().unwrap();
     for a in a.iter() {
-        product *= a;
-        // product %= MOD;
+        product *= a.to_bigint().unwrap();
     }
 
-    let mut l = a[0];
+    let mut l = a[0].to_bigint().unwrap();
     for i in 1..a.len() {
-        let a = a[i];
+        let a = a[i].to_bigint().unwrap();
 
         if l >= a {
-            // l = lcm(l, a) % MOD;
+            l = lcm(l, a);
         } else {
-            // l = lcm(a, l) % MOD;
+            l = lcm(a, l);
         }
 
-        // if l > product {
-        //     break;
-        // }
+        if l > product {
+            break;
+        }
     }
 
     if l == product {
@@ -80,15 +77,15 @@ fn main() {
     }
 
     // todo gcd of all.
-    let mut l = a[0] as u128;
+    let mut l = a[0];
     let mut aa = Zero::zero();
     for i in 1..a.len() {
-        aa = a[i] as u128;
+        aa = a[i];
 
         if l >= aa {
-            l = gcdu128(l as u128, aa as u128);
+            l = gcdusize(l, aa);
         } else {
-            l = gcdu128(aa, l);
+            l = gcdusize(aa, l);
         }
 
         if l == One::one() {
@@ -108,12 +105,12 @@ fn main() {
     // println!("{}", ans);
 }
 
-fn lcm(l: u128, r: u128) -> u128 {
+fn lcm(l: BigInt, r: BigInt) -> BigInt {
     let p = &l * &r;
     return p / gcd(l, r);
 }
 
-fn gcd(a: u128, b: u128) -> u128 {
+fn gcd(a: BigInt, b: BigInt) -> BigInt {
     if b == Zero::zero() {
         return a;
     } else {
@@ -122,11 +119,11 @@ fn gcd(a: u128, b: u128) -> u128 {
     }
 }
 
-fn gcdu128<'a>(a: u128, b: u128) -> u128 {
+fn gcdusize<'a>(a: usize, b: usize) -> usize {
     if b == Zero::zero() {
         return a;
     } else {
-        return gcdu128(b, a % b);
+        return gcdusize(b, a % b);
     }
 }
 
