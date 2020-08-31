@@ -40,32 +40,78 @@ pub fn read<T: FromStr>() -> T {
 lazy_static! {
     // static ref PARENTS: Mutex<Vec<usize>> = Mutex::default();
     // static ref CHILDS: Mutex<Vec<Vec<usize>>> = Mutex::default();
-    static ref ADJ: Mutex<Vec<Vec<usize>>> = Mutex::default();
+    static ref XY: Mutex<Vec<Vec<Option<usize>>>> = Mutex::default();
 }
 
 // const MOD: usize = 9997063;
-// const MOD: usize = 100_000_000_ + 7;
+const MOD: usize = 100_000_000_ + 7;
 
-//abc112-D
+//abc145-D
 // #[fastout]
 fn main() {
-    input![n: usize, m: usize];
+    input![x: usize, y: usize];
 
-    let mut ans = -1 as i64;
-    for i in 1..((m as f64).sqrt() as usize + 1) {
-        if m % i == 0 {
-            let inv_i = m / i;
-            if inv_i >= n {
-                ans = max(ans, i as i64);
-            }
+    {
+        let mut xy = XY.lock().unwrap();
+        *xy = vec![vec![None; y + 1]; x + 1];
+    }
 
-            if i >= n {
-                ans = max(ans, inv_i as i64);
-            }
+    // let mut ans = 0;
+
+    println!("{}", go((0, 0), x as i64, y as i64));
+}
+
+fn go(start: (i64, i64), x: i64, y: i64) -> usize {
+    // eprint!("{:?}, ", start);
+    let (start_x, start_y) = start;
+
+    if start_x == x && start_y == y {
+        return 1;
+    }
+
+    {
+        let x = x - start_x;
+        let y = y - start_y;
+        if (x + y) % 3 != 0 {
+            return 0;
         }
     }
 
-    println!("{}", ans);
+    {
+        let xy = XY.lock().unwrap();
+        // *xy = vec![vec![None; x + 1]; y + 1];
+        if let Some(v) = xy[start_x as usize][start_y as usize] {
+            return v;
+        }
+    }
+
+    let new_x = start_x + 1;
+    let new_y = start_y + 2;
+
+    let mid_1 = if new_x > x || new_y > y {
+        0
+    } else {
+        go((new_x, new_y), x, y)
+    };
+
+    let new_x = start_x + 2;
+    let new_y = start_y + 1;
+
+    let mid_2 = if new_x > x || new_y > y {
+        0
+    } else {
+        go((new_x, new_y), x, y)
+    };
+
+    let a = (mid_1 + mid_2) % MOD;
+
+    {
+        let mut xy = XY.lock().unwrap();
+        // *xy = vec![vec![None; x + 1]; y + 1];
+        xy[start_x as usize][start_y as usize] = Some(a);
+    }
+
+    return a;
 }
 
 // let mut values = VALUES.lock().unwrap();
