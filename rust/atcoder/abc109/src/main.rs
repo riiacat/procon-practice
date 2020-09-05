@@ -43,91 +43,85 @@ pub fn read<T: FromStr>() -> T {
 
 const MOD: usize = 1000_000_000 + 7;
 
-//abc147-D
+//abc109-D
 // #[fastout]
 fn main() {
-    input![n: usize, k: usize, mut s: Chars];
-    let n = n;
-    let s = s;
+    input![h: usize, w: usize, mut a: [[u32; w]; h]];
 
-    let mut old_is_inv = true;
-    let mut len = 0;
-    let mut inv_lens = Vec::new();
-    let mut stand_lens = Vec::new();
+    let h = h;
+    let w = w;
+    let a = a;
 
-    // if *s.first().unwrap() == '0' {
-    //     inv_lens.push((true, 0));
-    // }
+    let odd_count: usize = a
+        .iter()
+        .map(|a| {
+            a.iter()
+                .map(|a| if a % 2 == 1 { 1 } else { 0 })
+                .sum::<usize>()
+        })
+        .sum();
 
-    for s in s.iter() {
-        let is_inv = *s == '1';
+    let odds: Vec<(usize, usize, u32)> = a
+        .iter()
+        .enumerate()
+        .map(|(h, a)| {
+            a.iter().enumerate().filter_map(move |(w, val)| {
+                if val % 2 == 1 {
+                    eprintln!("{:?}", (w, h, *val));
+                    Some((w, h, *val))
+                } else {
+                    None
+                }
+            })
+        })
+        .flatten()
+        .collect();
 
-        if (is_inv == old_is_inv) {
-            len += 1;
-        } else if old_is_inv {
-            inv_lens.push((old_is_inv, len));
-            len = 1;
-        } else {
-            stand_lens.push((old_is_inv, len));
-            len = 1;
+    eprintln!("{:?}", odds);
+
+    // let n = h * w - (odd_count % 2);
+    let mut is_uses = vec![false; odds.len()];
+    let mut is_visited = vec![vec![false; w]; h];
+
+    let mut trackers = Vec::new();
+    for (idx, (w, h, v)) in odds.iter().enumerate() {
+        if odds.len() % 2 == 1
+            && is_uses
+                .iter()
+                .map(|is_use| if *is_use { 0 } else { 1 })
+                .sum::<usize>()
+                == 1
+        {
+            continue;
         }
 
-        old_is_inv = is_inv;
+        if is_uses[idx] {
+            continue;
+        }
+
+        let mut q = VecDeque::new();
+        is_visited[*h][*w] = true;
+        let mut tracker = vec![(w, h)];
+        q.push_back(((w, h), tracker));
+
+        while !q.is_empty() {
+            let ((w, h), tracker) = q.pop_front().unwrap();
+            if a[*h][*w] % 2 == 1 {
+                let idx = odds
+                    .iter()
+                    .position(|(hh, ww, _)| hh == h && ww == w)
+                    .unwrap();
+                is_uses[idx] = true;
+                trackers.push(tracker);
+                break;
+            }
+        }
     }
 
-    if *s.last().unwrap() == '1' {
-        inv_lens.push((true, len));
-        stand_lens.push((false, 0));
-    } else {
-        stand_lens.push((false, len));
-    }
+    // println!("{}", n);
+    // for
 
-    // eprintln!("{:?}", inv_lens);
-    // eprintln!("{:?}", stand_lens);
-
-    let inv_comsum = inv_lens.iter().fold(Vec::new(), |mut mid, (_, new)| {
-        mid.push((mid.last().unwrap_or(&0) + *new) as i64);
-        mid
-    });
-    let stand_comsum = stand_lens.iter().fold(Vec::new(), |mut mid, (_, new)| {
-        mid.push((mid.last().unwrap_or(&0) + *new) as i64);
-        mid
-    });
-
-    // eprintln!("{:?}", inv_comsum);
-    // eprintln!("{:?}", stand_comsum);
-
-    let mut ans = -1;
-    for i in 0..inv_comsum.len() {
-        let r = min(i + k, inv_comsum.len() - 1);
-        let i_stand = min(i, inv_comsum.len() - 1);
-        let r_stand = if r == 0 {
-            0
-        } else {
-            min(r - 1, inv_comsum.len() - 1)
-        };
-        // eprintln!(
-        //     "{}, {}, {}, {}, {}, {}, {}",
-        //     i,
-        //     r,
-        //     stand_comsum[r_stand],
-        //     inv_comsum[r],
-        //     if i == 0 { 0 } else { stand_comsum[i_stand - 1] },
-        //     if i == 0 { 0 } else { inv_comsum[i - 1] },
-        //     stand_comsum[r_stand] + inv_comsum[r]
-        //         - if i == 0 { 0 } else { stand_comsum[i_stand - 1] }
-        //         - if i == 0 { 0 } else { inv_comsum[i - 1] }
-        // );
-
-        ans = max(
-            ans,
-            stand_comsum[r_stand] + inv_comsum[r]
-                - if i == 0 { 0 } else { stand_comsum[i_stand - 1] }
-                - if i == 0 { 0 } else { inv_comsum[i - 1] },
-        );
-    }
-
-    println!("{}", ans);
+    // println!("{}", ans);
 }
 
 // let mut values = VALUES.lock().unwrap();
