@@ -51,44 +51,52 @@ lazy_static! {
 fn main() {
     input![n: usize, s: Chars];
 
-    // let mut continuas_region = Vec::new();
-
-    let mut b_count = vec![-1; n + 1];
-    let mut w_count = vec![-1; n + 1];
-    b_count[0] = 0;
-    w_count[0] = 0;
-    for (idx, s) in s.iter().enumerate() {
-        let idx = idx + 1;
-        b_count[idx] = b_count[idx - 1];
-        w_count[idx] = w_count[idx - 1];
-        if *s == '#' {
-            b_count[idx] += 1;
-        } else {
-            w_count[idx] += 1;
-        }
-    }
-
-    let all_w = w_count[n];
-    for i in 0..n + 1 {
-        w_count[i] = all_w - w_count[i];
-    }
-
-    // eprintln!("{:?}", b_count);
-    // eprintln!("{:?}", w_count);
+    let mut continuas_region = Vec::new();
 
     let mut old_is_w = true;
-    let mut ans = 1000000000;
-    for (idx, s) in s.iter().enumerate() {
-        let is_w = *s == '.';
-        // if !old_is_w && is_w {
-        //     eprintln!("{}, {}", idx, s);
-        ans = min(ans, w_count[idx] + b_count[idx]);
-        // }
+    let mut len = 0;
+    for s in s.iter() {
+        if *s == '.' && old_is_w {
+            len += 1;
+            eprintln!("white len: {}", len);
+        } else if *s == '#' && !old_is_w {
+            len += 1;
+            eprintln!("black len: {}", len);
+        } else {
+            eprintln!("switch len: {}", len);
+            continuas_region.push((old_is_w, len));
+            len = 1;
+        }
 
-        old_is_w = is_w;
+        old_is_w = *s == '.';
     }
 
-    ans = min(ans, w_count[n] + b_count[n]);
+    if *s.last().unwrap() == '.' {
+        continuas_region.push((true, len));
+    }
+
+    eprintln!("{:?}", continuas_region);
+
+    let mut old = (true, 100000000);
+    let mut ans = 0;
+    for (is_w, len) in continuas_region.iter() {
+        let (old_is_w, old_len) = old;
+        if *is_w && !old_is_w {
+            ans += min(*len, old_len);
+        }
+
+        old = (*is_w, *len);
+    }
+
+    let mut ans2 = 0;
+    for (is_w, len) in continuas_region.iter().rev() {
+        let (old_is_w, old_len) = old;
+        if *is_w && !old_is_w {
+            ans += min(*len, old_len);
+        }
+
+        old = (*is_w, *len);
+    }
 
     // eprintln!("{:?}", adj);
     println!("{}", ans);
