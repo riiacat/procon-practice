@@ -6,6 +6,7 @@ extern crate num_bigint; // 0.2.2
 extern crate num_traits; // 0.2.8
 use num_bigint::BigInt;
 use num_bigint::ToBigInt;
+use num_traits::abs;
 use num_traits::Pow;
 use num_traits::{One, Zero};
 
@@ -46,52 +47,40 @@ lazy_static! {
 // const MOD: usize = 9997063;
 // const MOD: usize = 100_000_000_ + 7;
 
-//tenka1-2019-C
+//abc174-E
 // #[fastout]
 fn main() {
-    input![n: usize, s: Chars];
+    input![n: usize, k: usize, a: [usize; n]];
 
-    // let mut continuas_region = Vec::new();
+    let mut ng = -100;
+    let mut ok = *a.iter().max().unwrap() as i64;
 
-    let mut b_count = vec![-1; n + 1];
-    let mut w_count = vec![-1; n + 1];
-    b_count[0] = 0;
-    w_count[0] = 0;
-    for (idx, s) in s.iter().enumerate() {
-        let idx = idx + 1;
-        b_count[idx] = b_count[idx - 1];
-        w_count[idx] = w_count[idx - 1];
-        if *s == '#' {
-            b_count[idx] += 1;
+    /* ok と ng のどちらが大きいかわからないことを考慮 */
+    while abs(ok - ng) > 1 {
+        // eprintln!("{}, {}", ng, ok);
+        let mid = (ok + ng) / 2;
+
+        if is_ok(mid, k, &a) {
+            ok = mid;
         } else {
-            w_count[idx] += 1;
+            ng = mid;
         }
     }
 
-    let all_w = w_count[n];
-    for i in 0..n + 1 {
-        w_count[i] = all_w - w_count[i];
+    // return ok;
+
+    println!("{}", ok);
+}
+
+fn is_ok(v: i64, k: usize, a: &Vec<usize>) -> bool {
+    if v <= 0 {
+        return false;
     }
-
-    // eprintln!("{:?}", b_count);
-    // eprintln!("{:?}", w_count);
-
-    let mut old_is_w = true;
-    let mut ans = 1000000000;
-    for (idx, s) in s.iter().enumerate() {
-        let is_w = *s == '.';
-        // if !old_is_w && is_w {
-        //     eprintln!("{}, {}", idx, s);
-        ans = min(ans, w_count[idx] + b_count[idx]);
-        // }
-
-        old_is_w = is_w;
-    }
-
-    ans = min(ans, w_count[n] + b_count[n]);
-
-    // eprintln!("{:?}", adj);
-    println!("{}", ans);
+    return a
+        .iter()
+        .map(|a| (*a as f64 / v as f64).ceil() as i64 - 1)
+        .sum::<i64>()
+        <= k as i64;
 }
 
 // let mut values = VALUES.lock().unwrap();
