@@ -54,7 +54,8 @@ impl Ord for State {
         // Notice that the we flip the ordering on costs.
         // In case of a tie we compare positions - this step is necessary
         // to make implementations of `PartialEq` and `Ord` consistent.
-        other.cost.cmp(&self.cost).reverse()
+        other.cost.cmp(&self.cost)
+        // .reverse()
     }
 }
 
@@ -94,7 +95,7 @@ fn main() {
 
     while dp[dH][dW] == None && !magic_q.is_empty() {
         let min_state = magic_q.pop().unwrap();
-        eprintln!("{:?}", min_state);
+        // eprintln!("{:?}", min_state);
 
         if dp[min_state.pos.0][min_state.pos.1].is_some() {
             continue;
@@ -111,7 +112,7 @@ fn main() {
             if dp[n_h][n_w].is_some() {
                 continue;
             }
-            eprintln!("next: {:?}", next);
+            // eprintln!("next: {:?}", next);
 
             dp[n_h][n_w] = Some(next.cost);
 
