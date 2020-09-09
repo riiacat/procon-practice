@@ -44,43 +44,35 @@ const MOD: usize = 1000_000_000 + 7;
 //abc147-C
 // #[fastout]
 fn main() {
-    input![n: usize];
+    input![n: usize, mut a: [usize; n]];
 
-    let mut a = Vec::new();
-    let mut xy: Vec<Vec<_>> = Vec::new();
+    let mut bit_counts = Vec::new();
 
-    for _ in 0..n {
-        input![ai: usize, xyi: [(usize, usize); ai]];
-        a.push(ai);
-        xy.push(xyi.iter().map(|(p, is)| (*p - 1, *is)).collect());
-    }
-
-    let mut ans = -1;
-    for i in 0..2usize.pow((n + 1) as u32) {
-        let mut mid = 0;
-        let mut is_valid = true;
-        for j in 0..n {
-            if (i >> j) & 1 == 0 {
-                continue;
+    for i in 0..60 {
+        // eprintln!("{:?}", a);
+        let mut count = 0;
+        for a in a.iter_mut() {
+            if *a & 1 == 1 {
+                count += 1;
             }
 
-            mid += 1;
-
-            for (p, is_h) in xy[j].iter() {
-                if (i >> p) & 1 != *is_h {
-                    is_valid = false;
-                }
-            }
+            *a = *a >> 1;
         }
 
-        // eprintln!("{}, {}, {}, {}", is_valid, i, mid, 2 ^ (n + 1));
-        if is_valid {
-            ans = max(ans, mid);
-        }
+        bit_counts.push(count);
     }
 
     // eprintln!("{:?}", bit_counts);
 
+    let mut ans = 0;
+    let mut fac = 1;
+    for (i, c) in bit_counts.iter().enumerate() {
+        ans += (((fac * c) % MOD) * (n - c)) % MOD;
+        ans %= MOD;
+
+        fac *= 2;
+        fac %= MOD;
+    }
     println!("{}", ans);
 }
 
