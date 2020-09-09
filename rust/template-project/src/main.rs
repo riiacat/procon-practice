@@ -5,26 +5,22 @@ extern crate lazy_static;
 extern crate num_bigint; // 0.2.2
 extern crate num_traits; // 0.2.8
 use num_bigint::BigInt;
-use num_bigint::ToBigInt;
 use num_traits::Pow;
-use num_traits::{One, Zero};
 
 // use proconio::derive_readable;
 use proconio::fastout;
 use proconio::input;
 // use std::convert::TryInto;
-// use ascii::Chars;
-use libm::*;
-use proconio::marker::{Bytes, Chars};
+use itertools::concat;
+use lazy_static::lazy_static;
+// use libm::*;
 use std::cmp::*;
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 use std::io::*;
 use std::ops::Range;
 use std::str::FromStr;
-use superslice::*;
-
-use lazy_static::lazy_static;
 use std::sync::Mutex;
+use superslice::*;
 
 pub fn read<T: FromStr>() -> T {
     let stdin = stdin();
@@ -38,101 +34,56 @@ pub fn read<T: FromStr>() -> T {
     token.parse().ok().expect("failed to parse token")
 }
 
-lazy_static! {
-    // static ref PARENTS: Mutex<Vec<usize>> = Mutex::default();
-    // static ref CHILDS: Mutex<Vec<Vec<usize>>> = Mutex::default();
-    static ref ADJ: Mutex<Vec<Vec<usize>>> = Mutex::default();
-}
+// lazy_static! {
+//     static ref H: Mutex<Vec<i32>> = Mutex::default();
+//     static ref W: Mutex<Vec<i32>> = Mutex::default();
+// }
 
-// const MOD: usize = 9997063;
-// const MOD: usize = 100_000_000_ + 7;
+const MOD: usize = 1000_000_000 + 7;
 
-//abc177-D
+//abc147-C
 // #[fastout]
 fn main() {
-    input![n: usize, a: [usize; n]];
+    input![n: usize];
 
-    // let a: u
-    let mut product = 1;
-    for a in a.iter() {
-        product *= a;
-        // product %= MOD;
+    let mut a = Vec::new();
+    let mut xy: Vec<Vec<_>> = Vec::new();
+
+    for _ in 0..n {
+        input![ai: usize, xyi: [(usize, usize); ai]];
+        a.push(ai);
+        xy.push(xyi.iter().map(|(p, is)| (*p - 1, *is)).collect());
     }
 
-    let mut l = a[0];
-    for i in 1..a.len() {
-        let a = a[i];
+    let mut ans = -1;
+    for i in 0..2usize.pow((n + 1) as u32) {
+        let mut mid = 0;
+        let mut is_valid = true;
+        for j in 0..n {
+            if (i >> j) & 1 == 0 {
+                continue;
+            }
 
-        if l >= a {
-            // l = lcm(l, a) % MOD;
-        } else {
-            // l = lcm(a, l) % MOD;
+            mid += 1;
+
+            for (p, is_h) in xy[j].iter() {
+                if (i >> p) & 1 != *is_h {
+                    is_valid = false;
+                }
+            }
         }
 
-        // if l > product {
-        //     break;
-        // }
-    }
-
-    if l == product {
-        println!("pairwise coprime");
-        return;
-    }
-
-    // todo gcd of all.
-    let mut l = a[0] as u128;
-    let mut aa = Zero::zero();
-    for i in 1..a.len() {
-        aa = a[i] as u128;
-
-        if l >= aa {
-            l = gcdu128(l as u128, aa as u128);
-        } else {
-            l = gcdu128(aa, l);
-        }
-
-        if l == One::one() {
-            println!("setwise coprime");
-            return;
+        // eprintln!("{}, {}, {}, {}", is_valid, i, mid, 2 ^ (n + 1));
+        if is_valid {
+            ans = max(ans, mid);
         }
     }
 
-    if l == One::one() {
-        println!("setwise coprime");
-        return;
-    }
+    // eprintln!("{:?}", bit_counts);
 
-    println!("not coprime");
-
-    // eprintln!("{:?}", adj);
-    // println!("{}", ans);
-}
-
-fn lcm(l: u128, r: u128) -> u128 {
-    let p = &l * &r;
-    return p / gcd(l, r);
-}
-
-fn gcd(a: u128, b: u128) -> u128 {
-    if b == Zero::zero() {
-        return a;
-    } else {
-        let md = a % &b;
-        return gcd(b, md);
-    }
-}
-
-fn gcdu128<'a>(a: u128, b: u128) -> u128 {
-    if b == Zero::zero() {
-        return a;
-    } else {
-        return gcdu128(b, a % b);
-    }
+    println!("{}", ans);
 }
 
 // let mut values = VALUES.lock().unwrap();
 // values.extend_from_slice(&[1, 2, 3, 4]);
 // assert_eq!(&*values, &[1, 2, 3, 4]);
-
-// -100000000
-//  1000000000
