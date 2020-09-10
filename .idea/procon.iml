@@ -9,6 +9,9 @@
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc147/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc151/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc151/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc110/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc110/tests" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc110/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc147/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc151/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc176/target" />

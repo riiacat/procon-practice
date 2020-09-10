@@ -43,109 +43,60 @@
 // //     static ref W: Mutex<Vec<i32>> = Mutex::default();
 // // }
 
-// //abc110-C
-// // #[fastout]
-// fn main() {
-//     input![s: String, t: String];
-
-//     let s = AsciiString::from_str(&s[..]).unwrap();
-//     let t = AsciiString::from_str(&t[..]).unwrap();
-
-//     let mut s_map = HashMap::new();
-//     let mut t_map = HashMap::new();
-
-//     for s_char in s.chars() {
-//         let e = s_map.entry(s_char).or_insert(0);
-//         *e += 1;
-//     }
-
-//     for t_char in t.chars() {
-//         let e = t_map.entry(t_char).or_insert(0);
-//         *e += 1;
-//     }
-
-//     if s_map.keys().len() == 26 {
-//         //sortして同じだったらOK
-//         let mut s: Vec<_> = s.chars().collect();
-//         let mut t: Vec<_> = t.chars().collect();
-//         s.sort();
-//         t.sort();
-//         if s != t {
-//             println!("No");
-//         } else {
-//             println!("Yes");
-//         }
-//         return;
-//     }
-
-//     // let mut s_items: Vec<_> = s_map.iter().collect();
-//     // let mut t_items: Vec<_> = s_map.iter().collect();
-
-//     let alphabets: HashSet<_> = AsciiString::from_str("abcdefghijklmnopqrstuvwxyz")
-//         .unwrap()
-//         .chars()
-//         .collect();
-
-//     let s_alphabets: HashSet<_> = s.chars().collect();
-
-//     let not_used_alphabets: HashSet<_> = alphabets.difference(&s_alphabets).collect();
-
-//     let mut s = s;
-
-//     for i in 0..s.len() {
-//         if s[i] == t[i] {
-//             continue;
-//         }
-
-//         if not_used_alphabets.contains(&t[i]) {
-//             s[i] = t[i];
-//         }
-//     }
-
-//     let mut s: Vec<_> = s.chars().collect();
-//     let mut t: Vec<_> = t.chars().collect();
-//     s.sort();
-//     t.sort();
-//     if s != t {
-//         println!("No");
-//     } else {
-//         println!("Yes");
-//     }
-//     return;
-
-//     // println!("{}", ans);
-// }
-
 // // let mut values = VALUES.lock().unwrap();
 // // values.extend_from_slice(&[1, 2, 3, 4]);
 // // assert_eq!(&*values, &[1, 2, 3, 4]);
 
 use proconio::{input, marker::Chars};
 use std::collections::HashMap;
+
+static ASCII_LOWER: [char; 26] = [
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+    't', 'u', 'v', 'w', 'x', 'y', 'z',
+];
+
 fn main() {
     input! {
         s: Chars,
         t: Chars,
     }
-    let mut dict = HashMap::new();
-    let mut dict_inv = HashMap::new();
-    for (c_s, c_t) in s.into_iter().zip(t.into_iter()) {
-        if let Some(&val) = dict.get(&c_s) {
-            if val != c_t {
+
+    let mut convMap = HashMap::new();
+    // for cha in ASCII_LOWER.iter() {
+    //     convMap.insert(*cha, None);
+    // }
+
+    for (s, t) in s.iter().zip(t.iter()) {
+        // eprintln!("{}, {}, {:?}", s, t, convMap.get(s));
+        if let Some(t_decided) = convMap.get(s) {
+            if t_decided != t {
                 println!("No");
                 return;
             }
         } else {
-            dict.insert(c_s, c_t);
-        }
-        if let Some(&val) = dict_inv.get(&c_t) {
-            if val != c_s {
-                println!("No");
-                return;
-            }
-        } else {
-            dict_inv.insert(c_t, c_s);
+            convMap.insert(*s, *t);
+            // convMap.insert(*t, *s);
         }
     }
+
+    let mut convMap = HashMap::new();
+
+    for (s, t) in s.iter().zip(t.iter()) {
+        let tmp = s;
+        let s = t;
+        let t = tmp;
+        // eprintln!("{}, {}, {:?}", s, t, convMap.get(s));
+        if let Some(t_decided) = convMap.get(s) {
+            if t_decided != t {
+                println!("No");
+                return;
+            }
+        } else {
+            convMap.insert(*s, *t);
+            // convMap.insert(*t, *s);
+        }
+    }
+
     println!("Yes");
+    return;
 }
