@@ -19,6 +19,7 @@ use std::ops::Range;
 use std::str::FromStr;
 use superslice::*;
 
+use itertools::Itertools;
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 
@@ -42,42 +43,31 @@ lazy_static! {
 //abc085-D
 // #[fastout]
 fn main() {
-    input![n: usize, h: usize, ab: [(usize, usize); n]];
+    input![n: usize, mut h: i64, ab: [(usize, usize); n]];
 
-    let mut ab_sorted = Vec::new();
-    for (a, b) in ab.iter() {
-        ab_sorted.push(Reverse((true, *a)));
-        ab_sorted.push(Reverse((false, *b)));
-    }
+    let a_max = ab.iter().map(|(a, b)| *a).max().unwrap();
+    let mut b = ab.iter().map(|(a, b)| *b).collect_vec();
+    b.sort_by_key(|b| Reverse(*b));
+    // eprintln!("{:?}", b);
 
-    ab_sorted.sort();
-
-    let mut comsum = Vec::new();
-    comsum.push(Reverse((ab_sorted[0].0).1));
-    for i in 1..(2 * n) {
-        comsum.push(Reverse((ab_sorted[i].0).1 + comsum[i - 1].0));
-    }
-
-    let mut ans = std::i64::MAX;
-    for (a, b) in ab.iter() {
-        let mut mid_ans: i64 = 0;
-        let mut h: i64 = h as i64;
-        let idx = ab_sorted.upper_bound(&Reverse((true, *a)));
-        eprintln!("{}, {:?}", a, ab_sorted);
-        eprintln!("{:?}", comsum);
-        eprintln!("{}", idx);
-
-        mid_ans += idx as i64;
-        h -= comsum[idx - 1].0 as i64;
-
-        eprintln!("rest_h: {}, mid_ans: {}", h, mid_ans);
-        if h > 0 {
-            let a = *a as i64;
-            mid_ans += h / a + if h % a != 0 { 1 } else { 0 };
+    let mut ans: i64 = 0;
+    for b in b.iter() {
+        if a_max > *b {
+            break;
         }
-        eprintln!("mid_ans: {}", mid_ans);
 
-        ans = min(mid_ans, ans);
+        if h <= 0 {
+            println!("{}", ans);
+            return;
+        }
+
+        h -= *b as i64;
+        ans += 1;
+    }
+
+    while h > 0 {
+        ans += 1;
+        h -= a_max as i64;
     }
 
     println!("{}", ans);
