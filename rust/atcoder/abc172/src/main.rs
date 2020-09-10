@@ -59,48 +59,18 @@ use std::collections::HashMap;
 fn main() {
     input! {
         n: usize,
-        s: Chars
     }
 
-    let mut from_l = vec![-1; n];
-    let mut from_r = vec![-1; n];
-
-    from_l[0] = if s[0] == ')' { -1 } else { 1 };
-    for (i, s) in s.iter().enumerate() {
-        if (i == 0) {
-            continue;
+    let mut ans = 0;
+    for i in 1..(n + 1) {
+        let mut tmp = 1;
+        while tmp * i <= n {
+            // eprintln!("{},{},{}", i, tmp, tmp * i);
+            ans += tmp * i;
+            tmp += 1;
         }
-
-        from_l[i] = from_l[i - 1] + if *s == ')' { -1 } else { 1 };
     }
 
-    from_r[0] = if *s.last().unwrap() == '(' { -1 } else { 1 };
-    for (i, s) in s.iter().rev().enumerate() {
-        if (i == 0) {
-            continue;
-        }
-
-        from_r[i] = from_r[i - 1] + if *s == '(' { -1 } else { 1 };
-    }
-
-    let to_fill_l = if *from_l.iter().min().unwrap() >= 0 {
-        0
-    } else {
-        from_l.iter().min().unwrap() * -1
-    };
-    let to_fill_r = (from_r.last().unwrap() - to_fill_l) * -1;
-    // eprintln!("{},{}, {}", to_fill_l, to_fill_r, from_r.last().unwrap());
-
-    for _ in 0..to_fill_l {
-        print!("(");
-    }
-    for s in s.iter() {
-        print!("{}", s);
-    }
-    for _ in 0..to_fill_r {
-        print!(")");
-    }
-    println!("");
-
+    println!("{}", ans);
     return;
 }
