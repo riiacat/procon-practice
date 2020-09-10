@@ -59,18 +59,37 @@ use std::collections::HashMap;
 fn main() {
     input! {
         n: usize,
+        a: [usize; n]
     }
 
-    let mut ans = 0;
-    for i in 1..(n + 1) {
-        let mut tmp = 1;
-        while tmp * i <= n {
-            // eprintln!("{},{},{}", i, tmp, tmp * i);
-            ans += tmp * i;
-            tmp += 1;
+    let mut b = vec![false; n];
+    for i in (1..n + 1).into_iter().rev() {
+        let mut num = i;
+        let mut sum_b: usize = 0;
+        while num <= n {
+            sum_b += if b[num - 1] { 1 } else { 0 };
+            num += i;
+        }
+
+        // eprintln!("{}, {}", i, sum_b);
+        b[i - 1] = (sum_b % 2) != a[i - 1];
+        //
+        // if i * 2 > n {
+        //     b[i - 1] = a[i - 1] == 1;
+        // } else {
+        //     b[i - 1] = a[2 * i - 1] != a[i - 1];
+        // }
+    }
+
+    println!(
+        "{}",
+        b.iter()
+            .map(|is_b| if *is_b { 1 } else { 0 })
+            .sum::<usize>()
+    );
+    for (idx, b) in b.iter().enumerate() {
+        if *b {
+            println!("{}", idx + 1);
         }
     }
-
-    println!("{}", ans);
-    return;
 }
