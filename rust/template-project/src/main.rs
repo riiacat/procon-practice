@@ -1,6 +1,5 @@
 // -*- coding:utf-8-unix -*-
 
-#[macro_use]
 extern crate lazy_static;
 extern crate num_bigint;
 // 0.2.2
@@ -46,6 +45,7 @@ pub fn read<T: FromStr>() -> T {
 // https://qiita.com/maguro_tuna/items/fab200fdc1efde1612e7
 // ###########
 
+#[allow(unused_macros)]
 macro_rules! chmin {
     ($base:expr, $($cmps:expr),+ $(,)*) => {{
         let cmp_min = min!($($cmps),+);
@@ -58,6 +58,7 @@ macro_rules! chmin {
     }};
 }
 
+#[allow(unused_macros)]
 macro_rules! chmax {
     ($base:expr, $($cmps:expr),+ $(,)*) => {{
         let cmp_max = max!($($cmps),+);
@@ -70,6 +71,7 @@ macro_rules! chmax {
     }};
 }
 
+#[allow(unused_macros)]
 macro_rules! min {
     ($a:expr $(,)*) => {{
         $a
@@ -82,6 +84,7 @@ macro_rules! min {
     }};
 }
 
+#[allow(unused_macros)]
 macro_rules! max {
     ($a:expr $(,)*) => {{
         $a
@@ -112,7 +115,7 @@ macro_rules! max {
 // https://qiita.com/drken/items/3b4fdf0a78e7a138cd9a
 // ##########
 
-#[warn(dead_code)]
+#[allow(dead_code)]
 fn modinv<T: Num + NumAssignOps + NumOps + Copy + PartialOrd>(a: T, m: T) -> T {
     let mut a = a;
     let mut b = m;
@@ -151,6 +154,7 @@ fn modinv_test() {
 // }
 // return res;
 // }
+#[allow(dead_code)]
 fn modpow<T>(a: T, n: T, modulo: T) -> T
 where
     T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
@@ -176,7 +180,7 @@ fn modpow_test() {
     assert_eq!(3, modpow(2, 4, 13));
 }
 
-// 前処理 COMinit(): O(n)
+// 前処理 com_init(): O(n)
 // クエリ処理 COM(n, k): O(1)
 // conv::com_init();
 // conv::com(n,k);
@@ -191,7 +195,7 @@ mod conv {
     }
 
     // // テーブルを作る前処理
-    // void COMinit() {
+    // void com_init() {
     // fac[0] = fac[1] = 1;
     // finv[0] = finv[1] = 1;
     // inv[1] = 1;
@@ -201,6 +205,7 @@ mod conv {
     // finv[i] = finv[i - 1] * inv[i] % MOD;
     // }
 
+    #[allow(dead_code)]
     fn com_init_with(modulo: usize, maxn_conv: usize) {
         let mut fac = FAC.lock().unwrap();
         let mut finv = FINV.lock().unwrap();
@@ -225,6 +230,7 @@ mod conv {
         }
     }
 
+    #[allow(dead_code)]
     pub fn com_init() {
         com_init_with(MOD, MAXN_CONV);
     }
@@ -235,6 +241,7 @@ mod conv {
     // if (n < 0 || k < 0) return 0;
     // return fac[n] * (finv[k] * finv[n - k] % MOD) % MOD;
     // }
+    #[allow(dead_code)]
     pub fn com(n: usize, k: usize) -> usize {
         let fac = FAC.lock().unwrap();
         let finv = FINV.lock().unwrap();
@@ -244,9 +251,9 @@ mod conv {
         if n < k {
             return 0;
         }
-        if n < 0 || k < 0 {
-            return 0;
-        }
+        // if n < 0 || k < 0 {
+        //     return 0;
+        // }
         return fac[n] * (finv[k] * finv[n - k] % m) % m;
     }
 
@@ -271,12 +278,14 @@ mod conv {
 mod uf {
     // let mut uf = uf::UnionFind::new(10);
     // uf.unite; uf.same
+    #[allow(dead_code)]
     struct UnionFind {
         par: Vec<usize>,
         rank: Vec<usize>,
     }
 
     impl UnionFind {
+        #[allow(dead_code)]
         pub fn new(n: usize) -> UnionFind {
             let mut vec = vec![0; n];
             for i in 0..n {
@@ -288,6 +297,7 @@ mod uf {
             }
         }
 
+        #[allow(dead_code)]
         fn find(&mut self, x: usize) -> usize {
             if x == self.par[x] {
                 x
@@ -299,10 +309,12 @@ mod uf {
             }
         }
 
+        #[allow(dead_code)]
         pub fn same(&mut self, a: usize, b: usize) -> bool {
             self.find(a) == self.find(b)
         }
 
+        #[allow(dead_code)]
         pub fn unite(&mut self, a: usize, b: usize) {
             let apar = self.find(a);
             let bpar = self.find(b);
@@ -359,16 +371,17 @@ mod uf {
 // ant_book
 // ###########
 mod seg_tree {
+    #[derive(Debug)]
     struct SegTree<T: Clone> {
         n: usize,
         dat: Vec<Option<T>>,
-
     }
 
-    impl<T: Clone> SegTree<T> {
+    impl<T: Clone + std::fmt::Debug> SegTree<T> {
+        #[allow(dead_code)]
         pub fn new(size: usize) -> SegTree<T> {
             let mut size_pow2 = 1;
-            while size < size_pow2 {
+            while size_pow2 < size {
                 size_pow2 *= 2;
             }
 
@@ -376,17 +389,24 @@ mod seg_tree {
             SegTree { n: size_pow2, dat }
         }
 
-        pub fn update<F: Fn(&Option<T>, &Option<T>) -> Option<T>>(&mut self, k: usize, a: T, update: F) {
+        #[allow(dead_code)]
+        pub fn update<F: Fn(&Option<T>, &Option<T>) -> Option<T>>(
+            &mut self,
+            k: usize,
+            a: T,
+            update: F,
+        ) {
             let mut k = k;
             k += self.n - 1;
             self.dat[k] = Some(a);
-            while (k > 0) {
+            while k > 0 {
                 k = (k - 1) / 2;
                 self.dat[k] = update(&self.dat[k * 2 + 1], &self.dat[k * 2 + 2]);
             }
         }
 
-        pub fn query<F: Fn(&Option<T>, &Option<T>) -> Option<T>>(
+        #[allow(dead_code)]
+        fn query_inner<F: Fn(&Option<T>, &Option<T>) -> Option<T>>(
             &self,
             selection_query: &F,
             a: usize,
@@ -395,24 +415,83 @@ mod seg_tree {
             l: usize,
             r: usize,
         ) -> Option<T> {
-            if (r <= a || b <= r) {
+            if r <= a || b <= l {
+                // eprintln!("{}, {}, {}, {}, {:?}", a, b, l, r, "none");
                 return None;
             }
 
-            if a <= l && r <= b {
-                return self.dat[k].clone();
+            return if a <= l && r <= b {
+                // eprintln!("{}, {}, {}, {}, {:?}", a, b, r, l, self.dat[k]);
+                self.dat[k].clone()
             } else {
-                let vl = self.query(selection_query, a, b, k + 2 + 1, l, (l + r) / 2);
-                let vr = self.query(selection_query, a, b, k + 2 + 2, (l + r) / 2, r);
-                return selection_query(&vl, &vr);
-            }
+                let vl = self.query_inner(selection_query, a, b, k * 2 + 1, l, (l + r) / 2);
+                let vr = self.query_inner(selection_query, a, b, k * 2 + 2, (l + r) / 2, r);
+
+                selection_query(&vl, &vr)
+            };
+        }
+
+        #[allow(dead_code)]
+        pub fn query<F: Fn(&Option<T>, &Option<T>) -> Option<T>>(
+            &self,
+            selection_query: &F,
+            a: usize,
+            b: usize,
+        ) -> Option<T> {
+            return self.query_inner(selection_query, a, b, 0, 0, self.n);
         }
     }
 
     #[test]
-    fn test_segtree() {
-        let mut t = SegTree::new(5);
-        t.update(0, ||)
+    fn test_segtree_rmq() {
+        let mut t: SegTree<usize> = SegTree::new(5);
+
+        let cmp_f = |lhs: &Option<usize>, rhs: &Option<usize>| {
+            if lhs.is_none() {
+                return rhs.clone();
+            }
+
+            if rhs.is_none() {
+                return lhs.clone();
+            }
+
+            return if lhs.unwrap() <= rhs.unwrap() {
+                lhs.clone()
+            } else {
+                rhs.clone()
+            };
+        };
+        // 1, 3, 2, 5, 1
+        t.update(0, 1, cmp_f);
+        t.update(1, 3, cmp_f);
+        t.update(2, 2, cmp_f);
+        t.update(3, 5, cmp_f);
+        t.update(4, 1, cmp_f);
+        // println!("{:?}", t);
+
+        assert_eq!(1, t.query(&cmp_f, 0, 1).unwrap());
+        assert_eq!(3, t.query(&cmp_f, 1, 2).unwrap());
+        assert_eq!(2, t.query(&cmp_f, 2, 3).unwrap());
+        assert_eq!(5, t.query(&cmp_f, 3, 4).unwrap());
+        assert_eq!(1, t.query(&cmp_f, 4, 5).unwrap());
+
+        // len2
+        assert_eq!(1, t.query(&cmp_f, 0, 2).unwrap());
+        assert_eq!(2, t.query(&cmp_f, 1, 3).unwrap());
+        assert_eq!(2, t.query(&cmp_f, 2, 4).unwrap());
+        assert_eq!(1, t.query(&cmp_f, 3, 5).unwrap());
+
+        // len3
+        assert_eq!(1, t.query(&cmp_f, 0, 3).unwrap());
+        assert_eq!(2, t.query(&cmp_f, 1, 4).unwrap());
+        assert_eq!(1, t.query(&cmp_f, 2, 5).unwrap());
+
+        // len4
+        assert_eq!(1, t.query(&cmp_f, 0, 4).unwrap());
+        assert_eq!(1, t.query(&cmp_f, 1, 5).unwrap());
+
+        // len5
+        assert_eq!(1, t.query(&cmp_f, 0, 6).unwrap());
     }
 }
 
@@ -420,9 +499,9 @@ mod seg_tree {
 // values.extend_from_slice(&[1, 2, 3, 4]);
 
 // MOD, Combination関連に使う定数
-#[warn(dead_code)]
+#[allow(dead_code)]
 const MOD: usize = 1000000007;
-#[warn(dead_code)]
+#[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
 // #[fastout]
