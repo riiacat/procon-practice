@@ -13,7 +13,7 @@ use num_traits::{one, zero, Num, NumAssignOps, NumOps, One, Pow, Zero};
 use proconio::fastout;
 use proconio::input;
 // use std::convert::TryInto;
-use itertools::{assert_equal, concat};
+use itertools::{assert_equal, concat, Itertools};
 use lazy_static::lazy_static;
 // use libm::*;
 use std::cmp::*;
@@ -506,5 +506,29 @@ const MAXN_CONV: usize = 510000;
 
 // #[fastout]
 fn main() {
-    input![n: usize];
+    input![n: usize, m:usize, mut a:[usize; n], mut bc:[(usize, usize); m]];
+
+    a.sort();
+
+    let mut cards = a.iter().map(|a| (1, *a)).collect_vec();
+    for (b, c) in bc {
+        cards.push((b, c));
+    }
+
+    cards.sort_by_key(|(_, v)| Reverse(*v));
+
+    let mut ans = 0;
+    let mut c = n;
+    // eprintln!("{:?}", cards);
+    for (count, v) in cards {
+        let can_push = min(c, count);
+        // eprintln!("{}, {}, {}", can_push, ans, c);
+        ans += v * can_push;
+        c -= can_push;
+        if c == 0 {
+            break;
+        }
+    }
+
+    println!("{}", ans);
 }
