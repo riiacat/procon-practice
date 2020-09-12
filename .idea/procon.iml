@@ -37,6 +37,8 @@
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc129/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc132/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc132/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc178/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc178/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc045/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc064/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc085/target" />
@@ -53,6 +55,7 @@
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc172/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc174/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc176/target" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc178/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/template-project/target" />
     </content>
     <orderEntry type="inheritedJdk" />
