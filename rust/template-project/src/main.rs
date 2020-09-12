@@ -184,7 +184,7 @@ fn modpow_test() {
 // クエリ処理 COM(n, k): O(1)
 // conv::com_init();
 // conv::com(n,k);
-mod conv {
+mod comb {
     use super::*;
     lazy_static! {
         static ref FAC: Mutex<Vec<usize>> = Mutex::default();
