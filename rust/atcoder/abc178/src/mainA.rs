@@ -13,7 +13,7 @@ use num_traits::{abs, one, zero, Num, NumAssignOps, NumOps, One, Pow, Zero};
 use proconio::fastout;
 use proconio::input;
 // use std::convert::TryInto;
-use itertools::{assert_equal, concat, Itertools};
+use itertools::{assert_equal, concat};
 use lazy_static::lazy_static;
 // use libm::*;
 use std::cmp::*;
@@ -679,118 +679,13 @@ const BASE_ROLLING_HASH: u64 = 1158187049;
 #[allow(dead_code)]
 const MOD: usize = 1000000007;
 #[allow(dead_code)]
-const MAXN_CONV: usize = 30000;
+const MAXN_CONV: usize = 510000;
 
-use rand::seq::SliceRandom;
-use std::slice::SliceIndex;
-
-// abc178-F
+// abc178-A
 // #[fastout]
 fn main() {
-    input![n: usize, a: [usize; n], mut b: [usize; n]];
+    input![x: i64];
     //new type
-    let mut a_count = HashMap::new();
-    let mut a_pos: HashMap<usize, _> = HashMap::new();
-    let mut b_count = HashMap::new();
 
-    for a in a.iter() {
-        let current = a_count.get(a).unwrap_or(&0);
-        a_count.insert(*a, *current + 1);
-    }
-
-    for (idx, a) in a.iter().enumerate() {
-        let poss: Option<&mut Vec<usize>> = a_pos.get_mut(a);
-        if let Some(poss) = poss {
-            poss.push(idx);
-        } else {
-            let mut v = Vec::new();
-            v.push(idx);
-            a_pos.insert(*a, v);
-        }
-    }
-    eprintln!("{:?}", a_pos);
-
-    for b in b.iter() {
-        let current = b_count.get(b).unwrap_or(&0);
-        b_count.insert(b, *current + 1);
-    }
-
-    let mut dup_count = HashMap::new();
-
-    for (key, count) in b_count.iter() {
-        if let Some(v) = a_count.get(*key) {
-            let dup = min(*v, *count);
-            dup_count.insert(**key, (count, dup));
-        } else {
-            dup_count.insert(**key, (count, 0));
-        }
-    }
-
-    for (key, count) in a_count.iter() {
-        if !dup_count.contains_key(&key) {
-            dup_count.insert(*key, (&0, -1));
-        }
-    }
-
-    let mut dup_count_v_asc = dup_count.iter().collect_vec();
-    dup_count_v_asc.sort_by_key(|(k, (_, c))| *c);
-    let mut dep_count_v_asc = dup_count_v_asc.iter();
-
-    let mut dup_count_v_desc = dup_count.iter().collect_vec();
-    dup_count_v_desc.sort_by_key(|(k, (_, c))| Reverse(*c));
-
-    let mut ans = vec![None; n];
-    let mut used_count = 0;
-    let (mut k, _) = dep_count_v_asc.next().unwrap();
-    loop {
-        if a_pos.get(k).is_some() {
-            break;
-        }
-        k = dep_count_v_asc.next().unwrap().0;
-    }
-
-    for (key, (b_count, _)) in dup_count_v_desc.iter() {
-        eprintln!("{}, {}, {:?}", key, b_count, ans);
-        for i in 0..(**b_count as usize) {
-            let a_pos_v = a_pos.get(k).unwrap();
-
-            if used_count == a_pos_v.len() {
-                loop {
-                    k = dep_count_v_asc.next().unwrap().0;
-                    if a_pos.get(k).is_some() {
-                        break;
-                    }
-                }
-
-                if *k == **key {
-                    println!("No");
-                    return;
-                }
-                used_count = 0;
-                // eprintln!("{}", i);
-                // let a_pos = a_pos.get(k).unwrap();
-                let a_pos_v = a_pos.get(k).unwrap();
-                let p = a_pos_v[used_count];
-                eprintln!("{}, {}, {:?}", p, key, ans[p]);
-                ans[p] = Some(**key);
-            } else {
-                if *k == **key {
-                    println!("No");
-                    return;
-                }
-                ans[a_pos_v[used_count]] = Some(**key);
-            }
-            used_count += 1;
-        }
-    }
-
-    eprintln!("{:?}", ans);
-    let ans = ans.iter().map(|v| v.unwrap()).collect_vec();
-
-    println!("Yes");
-    for ans in ans {
-        print!("{} ", ans);
-    }
-    // println!("{}", ans);
-    // println!("{}", std::i64::MAX);
+    println!("{}", abs((1 - x)));
 }
