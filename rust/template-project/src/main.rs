@@ -685,4 +685,5 @@ const MAXN_CONV: usize = 510000;
 // #[fastout]
 fn main() {
     input![n: usize];
+    //new type
 }

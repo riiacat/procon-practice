@@ -280,7 +280,7 @@ mod uf {
     // uf.unite; uf.same
     #[allow(dead_code)]
     struct UnionFind {
-        par: Vec<usize>,
+        par: Vec<i64>,
         rank: Vec<usize>,
     }
 
@@ -289,7 +289,7 @@ mod uf {
         pub fn new(n: usize) -> UnionFind {
             let mut vec = vec![0; n];
             for i in 0..n {
-                vec[i] = i;
+                vec[i] = -1;
             }
             UnionFind {
                 par: vec,
@@ -299,12 +299,12 @@ mod uf {
 
         #[allow(dead_code)]
         fn find(&mut self, x: usize) -> usize {
-            if x == self.par[x] {
+            if self.par[x] < 0 {
                 x
             } else {
                 let par = self.par[x];
-                let res = self.find(par);
-                self.par[x] = res;
+                let res = self.find(par as usize);
+                self.par[x] = res as i64;
                 res
             }
         }
@@ -319,13 +319,22 @@ mod uf {
             let apar = self.find(a);
             let bpar = self.find(b);
             if self.rank[apar] > self.rank[bpar] {
-                self.par[bpar] = apar;
+                self.par[apar] += self.par[bpar];
+                self.par[bpar] = apar as i64;
             } else {
-                self.par[apar] = bpar;
+                self.par[bpar] += self.par[apar];
+                self.par[apar] = bpar as i64;
                 if self.rank[apar] == self.rank[bpar] {
                     self.rank[bpar] += 1;
                 }
             }
+        }
+
+        #[allow(dead_code)]
+        pub fn size(&mut self, x: usize) -> usize {
+            let parent = self.find(x);
+            //parentのparにサイズが負の状態で入る
+            return (-self.par[parent]) as usize;
         }
     }
 
@@ -346,6 +355,13 @@ mod uf {
         assert_eq!(false, uf.same(1, 9));
         assert_eq!(false, uf.same(2, 9));
 
+        assert_eq!(2, uf.size(0));
+        assert_eq!(2, uf.size(1));
+        //1
+        assert_eq!(1, uf.size(2));
+        assert_eq!(1, uf.size(8));
+        assert_eq!(1, uf.size(9));
+
         uf.unite(8, 9);
         assert_eq!(true, uf.same(0, 1));
         assert_eq!(true, uf.same(8, 9));
@@ -353,6 +369,13 @@ mod uf {
         assert_eq!(false, uf.same(0, 9));
         assert_eq!(false, uf.same(1, 9));
         assert_eq!(false, uf.same(2, 9));
+
+        assert_eq!(2, uf.size(0));
+        assert_eq!(2, uf.size(1));
+        assert_eq!(2, uf.size(8));
+        assert_eq!(2, uf.size(9));
+        //1
+        assert_eq!(1, uf.size(2));
 
         uf.unite(1, 9);
         assert_eq!(true, uf.same(0, 1));
@@ -363,6 +386,13 @@ mod uf {
         assert_eq!(true, uf.same(1, 9));
         //false
         assert_eq!(false, uf.same(2, 9));
+
+        assert_eq!(4, uf.size(0));
+        assert_eq!(4, uf.size(1));
+        assert_eq!(4, uf.size(8));
+        assert_eq!(4, uf.size(9));
+        //1
+        assert_eq!(1, uf.size(2));
     }
 }
 
@@ -495,17 +525,165 @@ mod seg_tree {
     }
 }
 
+// ##############
+// rolling hash
+// ###############
+mod rolling_hash {
+    use super::*;
+    use ascii::{AsciiStr, AsciiString};
+    use num_traits::AsPrimitive;
+
+    fn contains_with(base: u64, a: &AsciiStr, b: &AsciiStr) -> bool {
+        let (al, bl) = (a.len(), b.len());
+        if al > bl {
+            return false;
+        }
+
+        let mut t: u64 = 1;
+        for _ in 0..al {
+            t = t.wrapping_mul(base);
+        }
+
+        let (mut ah, mut bh): (u64, u64) = (0, 0);
+
+        for i in 0..al {
+            ah = ah.wrapping_mul(base) + a[i].as_byte() as u64;
+        }
+        for i in 0..al {
+            bh = bh.wrapping_mul(base) + b[i].as_byte() as u64;
+        }
+
+        // eprintln!("{}, {}", ah, bh);
+
+        for i in 0..=bl - al {
+            if ah == bh {
+                return true;
+            }
+            if i + al < bl {
+                let mut add: i64 = b[i + al].as_byte().as_();
+                add -= ((b[i].as_byte() as u64).wrapping_mul(t)) as i64;
+                bh = (bh.wrapping_mul(base) as i64).wrapping_add(add) as u64;
+            }
+        }
+
+        return false;
+    }
+
+    #[allow(dead_code)]
+    pub fn contains(a: &AsciiStr, b: &AsciiStr) -> bool {
+        return contains_with(BASE_ROLLING_HASH, a, b);
+    }
+
+    #[test]
+    fn contains_test() {
+        const base: u64 = 1000_000_007;
+        assert_eq!(
+            false,
+            contains_with(
+                base,
+                &AsciiString::from_str("abc").unwrap(),
+                &AsciiString::from_str("a").unwrap()
+            )
+        );
+
+        assert_eq!(
+            true,
+            contains_with(
+                base,
+                &AsciiString::from_str("abc").unwrap(),
+                &AsciiString::from_str("aaabca").unwrap()
+            )
+        );
+
+        assert_eq!(
+            true,
+            contains_with(
+                base,
+                &AsciiString::from_str("aaaaaa").unwrap(),
+                &AsciiString::from_str("aaaaaa").unwrap()
+            )
+        );
+
+        assert_eq!(
+            false,
+            contains_with(
+                base,
+                &AsciiString::from_str("abc").unwrap(),
+                &AsciiString::from_str("aacbaa").unwrap()
+            )
+        )
+    }
+
+    fn overlap_last_and_head_with(base: u64, a: &AsciiStr, b: &AsciiStr) -> usize {
+        let (al, bl) = (a.len(), b.len());
+
+        let mut ans = 0;
+        let (mut ah, mut bh, mut t): (u64, u64, u64) = (0, 0, 1);
+        for i in 1..=min(al, bl) {
+            ah = ah.wrapping_add((a[al - i].as_byte() as u64).wrapping_mul(t));
+            bh = bh
+                .wrapping_mul(base)
+                .wrapping_add(b[i - 1].as_byte() as u64);
+
+            if ah == bh {
+                ans = i;
+            }
+            t = t.wrapping_mul(base);
+        }
+
+        return ans;
+    }
+
+    fn overlap_last_and_head(a: &AsciiStr, b: &AsciiStr) -> usize {
+        return overlap_last_and_head_with(BASE_ROLLING_HASH, a, b);
+    }
+
+    #[test]
+    fn overlap_test() {
+        const base: u64 = 1000_000_007;
+        assert_eq!(
+            0,
+            overlap_last_and_head_with(
+                base,
+                &AsciiString::from_str("abc").unwrap(),
+                &AsciiString::from_str("a").unwrap()
+            )
+        );
+
+        assert_eq!(
+            2,
+            overlap_last_and_head_with(
+                base,
+                &AsciiString::from_str("abc").unwrap(),
+                &AsciiString::from_str("bca").unwrap()
+            )
+        );
+
+        assert_eq!(
+            5,
+            overlap_last_and_head_with(
+                base,
+                &AsciiString::from_str("hogefoobar").unwrap(),
+                &AsciiString::from_str("oobarhoge").unwrap()
+            )
+        );
+    }
+}
+
 // let mut values = VALUES.lock().unwrap();
 // values.extend_from_slice(&[1, 2, 3, 4]);
 
 // MOD, Combination関連に使う定数
 #[allow(dead_code)]
+const BASE_ROLLING_HASH: u64 = 1158187049;
+#[allow(dead_code)]
 const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
-// abc000-A
+// abc178-A
 // #[fastout]
 fn main() {
     input![n: usize];
+    //new type
 }
