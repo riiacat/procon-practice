@@ -280,7 +280,7 @@ mod uf {
     // uf.unite; uf.same
     #[allow(dead_code)]
     struct UnionFind {
-        par: Vec<usize>,
+        par: Vec<i64>,
         rank: Vec<usize>,
     }
 
@@ -289,7 +289,7 @@ mod uf {
         pub fn new(n: usize) -> UnionFind {
             let mut vec = vec![0; n];
             for i in 0..n {
-                vec[i] = i;
+                vec[i] = -1;
             }
             UnionFind {
                 par: vec,
@@ -299,12 +299,12 @@ mod uf {
 
         #[allow(dead_code)]
         fn find(&mut self, x: usize) -> usize {
-            if x == self.par[x] {
+            if self.par[x] < 0 {
                 x
             } else {
                 let par = self.par[x];
-                let res = self.find(par);
-                self.par[x] = res;
+                let res = self.find(par as usize);
+                self.par[x] = res as i64;
                 res
             }
         }
@@ -319,13 +319,22 @@ mod uf {
             let apar = self.find(a);
             let bpar = self.find(b);
             if self.rank[apar] > self.rank[bpar] {
-                self.par[bpar] = apar;
+                self.par[apar] += self.par[bpar];
+                self.par[bpar] = apar as i64;
             } else {
-                self.par[apar] = bpar;
+                self.par[bpar] += self.par[apar];
+                self.par[apar] = bpar as i64;
                 if self.rank[apar] == self.rank[bpar] {
                     self.rank[bpar] += 1;
                 }
             }
+        }
+
+        #[allow(dead_code)]
+        pub fn size(&mut self, x: usize) -> usize {
+            let parent = self.find(x);
+            //parentのparにサイズが負の状態で入る
+            return (-self.par[parent]) as usize;
         }
     }
 
@@ -346,6 +355,13 @@ mod uf {
         assert_eq!(false, uf.same(1, 9));
         assert_eq!(false, uf.same(2, 9));
 
+        assert_eq!(2, uf.size(0));
+        assert_eq!(2, uf.size(1));
+        //1
+        assert_eq!(1, uf.size(2));
+        assert_eq!(1, uf.size(8));
+        assert_eq!(1, uf.size(9));
+
         uf.unite(8, 9);
         assert_eq!(true, uf.same(0, 1));
         assert_eq!(true, uf.same(8, 9));
@@ -353,6 +369,13 @@ mod uf {
         assert_eq!(false, uf.same(0, 9));
         assert_eq!(false, uf.same(1, 9));
         assert_eq!(false, uf.same(2, 9));
+
+        assert_eq!(2, uf.size(0));
+        assert_eq!(2, uf.size(1));
+        assert_eq!(2, uf.size(8));
+        assert_eq!(2, uf.size(9));
+        //1
+        assert_eq!(1, uf.size(2));
 
         uf.unite(1, 9);
         assert_eq!(true, uf.same(0, 1));
@@ -363,6 +386,13 @@ mod uf {
         assert_eq!(true, uf.same(1, 9));
         //false
         assert_eq!(false, uf.same(2, 9));
+
+        assert_eq!(4, uf.size(0));
+        assert_eq!(4, uf.size(1));
+        assert_eq!(4, uf.size(8));
+        assert_eq!(4, uf.size(9));
+        //1
+        assert_eq!(1, uf.size(2));
     }
 }
 
