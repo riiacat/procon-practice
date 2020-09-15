@@ -659,17 +659,6 @@ mod rolling_hash {
     }
 }
 
-// ##########
-// lazy_static!
-// ##########
-// lazy_static! {
-//     static ref H: Mutex<Vec<i32>> = Mutex::default();
-//     static ref W: Mutex<Vec<i32>> = Mutex::default();
-// }
-// let mut values = VALUES.lock().unwrap();
-// values.extend_from_slice(&[1, 2, 3, 4]);
-// assert_eq!(&*values, &[1, 2, 3, 4]);
-
 // let mut values = VALUES.lock().unwrap();
 // values.extend_from_slice(&[1, 2, 3, 4]);
 
@@ -681,9 +670,62 @@ const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
+
+// ##########
+// lazy_static!
+// ##########
+lazy_static! {
+    static ref ADJ: Mutex<Vec<Vec<(usize, usize)>>> = Mutex::default();
+    static ref ISWHITE: Mutex<Vec<Vec<Option<bool>>>> = Mutex::default();
+}
+// let mut values = VALUES.lock().unwrap();
+// values.extend_from_slice(&[1, 2, 3, 4]);
+// assert_eq!(&*values, &[1, 2, 3, 4]);
+
+// const MOD: usize = 1000_000_000 + 7;
+
 // abc000-A
 // #[fastout]
 fn main() {
-    input![n: usize];
+    input![n: usize, uvw: [(usize, usize, usize); (n-1)]];
     //new type
+
+    // let mut adj = ADJ.lock().unwrap();
+    let mut adj = vec![Vec::new(); n];
+
+    for (u, v, w) in uvw {
+        let u = u - 1;
+        let v = v - 1;
+        adj[u].push((v, w));
+        adj[v].push((u, w));
+    }
+
+    let mut is_white = vec![None; n];
+
+    let mut q = VecDeque::new();
+    q.push_back((0, 0));
+    is_white[0] = Some(true);
+
+    while !q.is_empty(){
+        let (start, before_len) = q.pop_front().unwrap();
+
+        for (to, l) in adj[start].iter(){
+            if is_white[*to].is_some(){
+                continue;
+            }
+
+
+            let l = l + before_len;
+            is_white[*to] = Some(l % 2 == 0);
+            // eprintln!("{}->{}: {}", start + 1, to + 1, l);
+
+            q.push_back((*to, l));
+        }
+    }
+
+    for is_white in is_white.iter(){
+        let is = is_white.unwrap();
+        println!("{}", if is {0} else{ 1});
+    }
+
 }
