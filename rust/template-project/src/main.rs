@@ -268,8 +268,9 @@ mod uf {
     // let mut uf = uf::UnionFind::new(10);
     // uf.unite; uf.same
     #[allow(dead_code)]
-    struct UnionFind {
-        par: Vec<i64>,
+    #[derive(Debug)]
+    pub struct UnionFind {
+    par: Vec<i64>,
         rank: Vec<usize>,
     }
 
