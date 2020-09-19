@@ -40,7 +40,7 @@ pub fn read<T: FromStr>() -> T {
 //     static ref W: Mutex<Vec<i32>> = Mutex::default();
 // }
 
-//abc147-C
+//abc151-D
 // #[fastout]
 fn main() {
     input![h: usize, w: usize, s: [Chars; h]];
