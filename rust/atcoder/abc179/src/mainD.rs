@@ -27,7 +27,6 @@ use superslice::*;
 use proconio::marker::Chars;
 use std::iter::FromIterator;
 use num_integer::Integer;
-use std::process::id;
 
 // ##########
 // read
@@ -149,9 +148,9 @@ fn modinv_test() {
 // }
 #[allow(dead_code)]
 fn modpow<T>(a: T, n: T, modulo: T) -> T
-    where
-        T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
-        <T as BitAnd>::Output: PartialEq + Num,
+where
+    T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
+    <T as BitAnd>::Output: PartialEq + Num,
 {
     let mut res = one();
     let mut a = a;
@@ -274,7 +273,7 @@ mod uf {
     #[allow(dead_code)]
     #[derive(Debug)]
     pub struct UnionFind {
-        par: Vec<i64>,
+    par: Vec<i64>,
         rank: Vec<usize>,
     }
 
@@ -689,62 +688,40 @@ const MAXN_CONV: usize = 510000;
 // abc179-D
 // #[fastout]
 fn main() {
-    input![n: usize, x: usize, m:usize];
-
-    let a1 = x;
-    let mut a = x;
-
-    if n < 100100{
-        let mut ans: usize = a;
-
-        for i in 1..n{
-            a = (a * a) % m;
-            ans += a;
-        }
-        println!("{}", ans);
-        return;
-    }
-
-    let mut before_len: usize = 1;
-    let mut before_sum : usize = x;
-
-    if x <= 1 {
-        println!("{}", if x == 0{0}else{n});
-        return;
-    }
-
-    let mut loop_sum: Vec<usize> = Vec::with_capacity(m);
-    loop_sum.push(a);
-    let mut loop_len:usize = 1;
-
-    let mut rest = (n - before_len) as i64;
-
-    let mut idx = 1;
-    loop{
-
-    }
-    // eprintln!("{}, {:?}",loop_len ,loop_sum);
+    input![n: usize, k:usize, lr:[(i64, i64); k]];
 
     let mut ans = 0;
-    ans += before_sum;
-    // eprintln!("ans: {}", ans);
+    let mut dp = vec![0; n];
+    let mut dp_cumsum: Vec<i64> = vec![1; n];
+    dp[0] = 1;
 
-    // if rest
-    if rest > 0{
-        let (loop_c, modulo) = (rest as usize).div_mod_floor(&loop_len);
-        // eprintln!("rest: {}, loop_c: {}, module: {}", rest, loop_c, modulo);
-        ans += loop_c * loop_sum.last().unwrap();
-        // eprintln!("ans: {}", ans);
-        if modulo > 0 {
-            ans += loop_sum[modulo as usize -1];
+    for i in 1..n{
+        let mut diff = 0;
+        for j in 0..k{
+            let (l, r) = lr[j];
+            let l = i as i64- l ;
+            let r = max(0, i as i64- r) as usize;
+            if r == 0{
+                if l < 0 {
+                    continue;
+                }
+                diff += dp_cumsum[l as usize ] ;
+                diff %= MOD as i64 ;
+                // eprintln!("1: diff: {}, i: {}, j th: {},           right: {}",diff, i, j, l);
+            }else{
+                diff += MOD as i64 + dp_cumsum[l as usize] - dp_cumsum[r as usize - 1];
+                diff %= MOD as i64 ;
+                // eprintln!("2: diff: {}, i: {}, j th: {}, left: {}, right: {}",diff, i, j, r -1, l);
+            }
         }
-    }else {
+        dp[i] += diff;
+        dp[i] %= MOD as i64;
 
+        dp_cumsum[i] = diff + dp_cumsum[i-1];
+        dp_cumsum[i] %= MOD as i64;
+        // eprintln!("dp: {:?}", dp);
+        // eprintln!("cm: {:?}", dp_cumsum);
     }
 
-    // eprintln!("ans: {}", ans);
-
-    println!("{}", ans);
-
-    // println!("{}", dp[n-1]);
+    println!("{}", dp[n-1]);
 }
