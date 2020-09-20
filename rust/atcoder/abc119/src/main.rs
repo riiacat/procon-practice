@@ -7,7 +7,7 @@ extern crate num_traits;
 
 // 0.2.8
 use num_bigint::BigInt;
-use num_traits::{one, zero, Num, NumAssignOps, NumOps, One, Pow, Zero};
+use num_traits::{one, zero, Num, NumAssignOps, NumOps, One, Pow, Zero, abs};
 
 // use proconio::derive_readable;
 use proconio::fastout;
@@ -145,9 +145,9 @@ fn modinv_test() {
 // }
 #[allow(dead_code)]
 fn modpow<T>(a: T, n: T, modulo: T) -> T
-    where
-        T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
-        <T as BitAnd>::Output: PartialEq + Num,
+where
+    T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
+    <T as BitAnd>::Output: PartialEq + Num,
 {
     let mut res = one();
     let mut a = a;
@@ -270,7 +270,7 @@ mod uf {
     #[allow(dead_code)]
     #[derive(Debug)]
     pub struct UnionFind {
-        par: Vec<i64>,
+    par: Vec<i64>,
         rank: Vec<usize>,
     }
 
@@ -682,22 +682,123 @@ const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
-// abc000-A
+// abc119-D
 // #[fastout]
 fn main() {
-    input![n: usize, m: usize, mut ab: [(usize, usize); m]];
+    input![a: usize, b: usize, q: usize, s:[i64; a], t:[i64; b], x:[i64;q ]];
     //new type
 
-    ab.sort_by_key(|(a,b)| *b);
+    // eprintln!("{:?}", s);
+    // eprintln!("{:?}", t);
 
-    let mut ans = 0;
-    let mut most_right: i64 = -1;
-    for (a,b) in ab{
-        if most_right <= a as i64 {
-            ans += 1;
-            most_right = b as i64;
+    //s -> t
+    for x in x{
+        // eprintln!("x: {}", x);
+        let mut ans = 0;
+        // s -> t
+        {
+            let mut s_start = s.upper_bound(&x);
+            let mut is_over = false;
+            if s_start == s.len(){
+                // eprintln!("s_start rewrite");
+                s_start = s.len() - 1;
+                is_over = true;
+            }
+            // eprintln!("1: s_start:{}", s_start);
+
+            let start_len = abs(x-s[s_start]);
+
+            let mut to_t1 = t.upper_bound(&s[s_start]);
+            if to_t1 == t.len(){
+                // eprintln!("1: to_t1 rewrite");
+                to_t1 = t.len() -1;
+            }
+
+            let mut s_t_len = abs(s[s_start] - t[to_t1]);
+
+            if to_t1 != 0{
+                chmin!(s_t_len, abs(s[s_start] - t[to_t1 -1]));
+            }
+
+            ans = s_t_len + start_len;
+            // eprintln!("1: {} + {} = {}", start_len, s_t_len, ans);
+
+            // if s_start != s.len() -1 && !is_over {
+            if s_start != 0 {
+                let s_start = s_start - 1;
+                let start_len2 = abs(x-s[s_start]);
+
+                let mut to_t1 = t.upper_bound(&s[s_start]);
+                if to_t1 == t.len(){
+                    to_t1 = t.len() -1;
+                }
+                // eprintln!("2: to_t1 rewrite");
+                let mut s_t_len= abs(s[s_start] - t[to_t1]);
+
+                if to_t1 != 0 {
+                    chmin!(s_t_len, abs(s[s_start] - t[to_t1 -1]));
+                }
+
+                chmin!(ans, s_t_len + start_len2);
+                // eprintln!("2: {} + {} = {}", start_len2, s_t_len, ans);
+
+            }
         }
-    }
 
-    println!("{}", ans);
+        let tmp = &t;
+        let t = &s;
+        let s = tmp;
+
+        {
+            let mut s_start = s.upper_bound(&x);
+            let mut is_over = false;
+            if s_start == s.len(){
+                // eprintln!("s_start rewrite");
+                s_start = s.len() - 1;
+                is_over = true;
+            }
+            // eprintln!("1: s_start:{}", s_start);
+
+            let start_len = abs(x-s[s_start]);
+
+            let mut to_t1 = t.upper_bound(&s[s_start]);
+            if to_t1 == t.len(){
+                // eprintln!("1: to_t1 rewrite");
+                to_t1 = t.len() -1;
+            }
+
+            let mut s_t_len = abs(s[s_start] - t[to_t1]);
+
+            if to_t1 != 0{
+                chmin!(s_t_len, abs(s[s_start] - t[to_t1 -1]));
+            }
+
+            chmin!(ans, s_t_len + start_len);
+            // eprintln!("1: {} + {} = {}", start_len, s_t_len, ans);
+
+            // if s_start != s.len() -1 && !is_over {
+            if s_start != 0 {
+                let s_start = s_start - 1;
+                let start_len2 = abs(x-s[s_start]);
+
+                let mut to_t1 = t.upper_bound(&s[s_start]);
+                if to_t1 == t.len(){
+                    to_t1 = t.len() -1;
+                }
+                // eprintln!("2: to_t1 rewrite");
+                let mut s_t_len= abs(s[s_start] - t[to_t1]);
+
+                if to_t1 != 0 {
+                    chmin!(s_t_len, abs(s[s_start] - t[to_t1 -1]));
+                }
+
+                chmin!(ans, s_t_len + start_len2);
+                // eprintln!("2: {} + {} = {}", start_len2, s_t_len, ans);
+
+            }
+        }
+
+        //t -> s
+        println!("{}", ans);
+    }
 }
