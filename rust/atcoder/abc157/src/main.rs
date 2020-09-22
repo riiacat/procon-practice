@@ -12,16 +12,15 @@ use num_traits::{one, zero, Num, NumAssignOps, NumOps, One, Pow, Zero};
 // use proconio::derive_readable;
 use proconio::fastout;
 use proconio::input;
-use proconio::marker::Chars;
 // use std::convert::TryInto;
-use itertools::{assert_equal, concat};
+use itertools::{assert_equal, concat, Itertools};
 use lazy_static::lazy_static;
 // use libm::*;
 use std::cmp::*;
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 use std::io::*;
 use std::mem::swap;
-use std::ops::{BitAnd, Range, ShrAssign};
+use std::ops::{BitAnd, Range, ShrAssign, BitOr};
 use std::str::FromStr;
 use std::sync::Mutex;
 use superslice::*;
@@ -99,7 +98,6 @@ macro_rules! max {
 }
 
 
-
 // ##########
 // modint
 // https://qiita.com/drken/items/3b4fdf0a78e7a138cd9a
@@ -146,9 +144,9 @@ fn modinv_test() {
 // }
 #[allow(dead_code)]
 fn modpow<T>(a: T, n: T, modulo: T) -> T
-where
-    T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
-    <T as BitAnd>::Output: PartialEq + Num,
+    where
+        T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
+        <T as BitAnd>::Output: PartialEq + Num,
 {
     let mut res = one();
     let mut a = a;
@@ -271,7 +269,7 @@ mod uf {
     #[allow(dead_code)]
     #[derive(Debug)]
     pub struct UnionFind {
-    par: Vec<i64>,
+        par: Vec<i64>,
         rank: Vec<usize>,
     }
 
@@ -442,7 +440,7 @@ mod seg_tree {
             }
 
             return if a <= l && r <= b {
-                // eprintln!("{}, {}, {}, {}, {:?}", a, b, r, l, self.dat[k]);
+                // eprintln!("{}, {}, {}, {}, {:?}", a, b, l, r, self.dat[k]);
                 self.dat[k].clone()
             } else {
                 let vl = self.query_inner(selection_query, a, b, k * 2 + 1, l, (l + r) / 2);
@@ -573,7 +571,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("a").unwrap()
+                &AsciiString::from_str("a").unwrap(),
             )
         );
 
@@ -582,7 +580,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("aaabca").unwrap()
+                &AsciiString::from_str("aaabca").unwrap(),
             )
         );
 
@@ -591,7 +589,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("aaaaaa").unwrap(),
-                &AsciiString::from_str("aaaaaa").unwrap()
+                &AsciiString::from_str("aaaaaa").unwrap(),
             )
         );
 
@@ -600,7 +598,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("aacbaa").unwrap()
+                &AsciiString::from_str("aacbaa").unwrap(),
             )
         )
     }
@@ -637,7 +635,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("a").unwrap()
+                &AsciiString::from_str("a").unwrap(),
             )
         );
 
@@ -646,7 +644,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("bca").unwrap()
+                &AsciiString::from_str("bca").unwrap(),
             )
         );
 
@@ -655,7 +653,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("hogefoobar").unwrap(),
-                &AsciiString::from_str("oobarhoge").unwrap()
+                &AsciiString::from_str("oobarhoge").unwrap(),
             )
         );
     }
@@ -683,9 +681,80 @@ const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
-// abc000-A
+use proconio::marker::Chars;
+use seg_tree::*;
+use fixedbitset::FixedBitSet;
+use ascii::{AsciiString, AsciiChar, AsAsciiStr};
+use std::iter::FromIterator;
+
+
+#[allow(dead_code)]
+fn to_alphabet_num(a: AsciiChar) -> usize{
+    (a.as_byte() - AsciiChar::a.as_byte()) as usize
+}
+
+// abc157-E
 // #[fastout]
 fn main() {
-    input![n: usize];
-    //new type
+    input![n: usize, s: String, q:usize]; //, q:[(usize, char, char); q]];
+
+    let s = AsciiString::from_str(&s).unwrap();
+    let mut st:SegTree<FixedBitSet> = seg_tree::SegTree::new(n);
+    // let mut FixedBitSet
+
+    let update_fn = |m_b1: &Option<FixedBitSet>, m_b2: &Option<FixedBitSet>| {
+        let b1 = m_b1.clone().unwrap_or(FixedBitSet::with_capacity(30));
+        let b2 =  m_b2.clone().unwrap_or(FixedBitSet::with_capacity(30));
+        Some((&b1).bitor(&b2))
+    };
+
+    for i in 0..n{
+        let s = to_alphabet_num(s[i]);
+        // println!("{:?}", s.as_byte() -AsciiChar::a.as_byte());
+        // println!("{:?}", to_alphabet_num(s));
+        let mut bs = FixedBitSet::with_capacity(30);
+        bs.set(s as usize, true);
+        st.update(i, bs, &update_fn);
+    }
+
+    // let select_fn = |m_b1: &Option<FixedBitSet>, m_b2: &Option<FixedBitSet>|{
+    //
+    // }
+
+    for i in 0..q{
+        input![q_n: usize];
+
+        if q_n == 1{
+            input![v1: usize, v2: char];
+            let s = to_alphabet_num(AsciiChar::from_ascii(v2).unwrap());
+            let mut bs = FixedBitSet::with_capacity(30);
+            bs.set(s as usize, true);
+
+            st.update(v1 - 1, bs, &update_fn);
+        }else{
+            input![v1: usize, v2: usize];
+            let ans = st.query(&update_fn,
+                               v1 - 1,
+                               v2- 1+ 1,
+            ).unwrap();
+            println!("{}", ans.count_ones(0..));
+        }
+    }
+    // for (q_n, v1, v2) in q{
+    //     if q_n == 1{
+    //         let s = to_alphabet_num(AsciiChar::from_ascii(v2).unwrap());
+    //         let mut bs = FixedBitSet::with_capacity(30);
+    //         bs.set(s as usize, true);
+    //
+    //         st.update(v1.to_digit(10).unwrap() as usize - 1, bs, &update_fn);
+    //     }else{
+    //         let ans = st.query(&update_fn,
+    //                            v1.to_digit(10).unwrap() as usize - 1,
+    //                            v2.to_digit(10).unwrap() as usize - 1+ 1,
+    //         ).unwrap();
+    //         println!("{}", ans.count_ones(0..));
+    //     }
+    // }
+
+    // println!("{}", ans);
 }
