@@ -12,9 +12,8 @@ use num_traits::{one, zero, Num, NumAssignOps, NumOps, One, Pow, Zero};
 // use proconio::derive_readable;
 use proconio::fastout;
 use proconio::input;
-use proconio::marker::Chars;
 // use std::convert::TryInto;
-use itertools::{assert_equal, concat};
+use itertools::{assert_equal, concat, Itertools};
 use lazy_static::lazy_static;
 // use libm::*;
 use std::cmp::*;
@@ -99,7 +98,6 @@ macro_rules! max {
 }
 
 
-
 // ##########
 // modint
 // https://qiita.com/drken/items/3b4fdf0a78e7a138cd9a
@@ -146,9 +144,9 @@ fn modinv_test() {
 // }
 #[allow(dead_code)]
 fn modpow<T>(a: T, n: T, modulo: T) -> T
-where
-    T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
-    <T as BitAnd>::Output: PartialEq + Num,
+    where
+        T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
+        <T as BitAnd>::Output: PartialEq + Num,
 {
     let mut res = one();
     let mut a = a;
@@ -271,7 +269,7 @@ mod uf {
     #[allow(dead_code)]
     #[derive(Debug)]
     pub struct UnionFind {
-    par: Vec<i64>,
+        par: Vec<i64>,
         rank: Vec<usize>,
     }
 
@@ -573,7 +571,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("a").unwrap()
+                &AsciiString::from_str("a").unwrap(),
             )
         );
 
@@ -582,7 +580,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("aaabca").unwrap()
+                &AsciiString::from_str("aaabca").unwrap(),
             )
         );
 
@@ -591,7 +589,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("aaaaaa").unwrap(),
-                &AsciiString::from_str("aaaaaa").unwrap()
+                &AsciiString::from_str("aaaaaa").unwrap(),
             )
         );
 
@@ -600,7 +598,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("aacbaa").unwrap()
+                &AsciiString::from_str("aacbaa").unwrap(),
             )
         )
     }
@@ -637,7 +635,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("a").unwrap()
+                &AsciiString::from_str("a").unwrap(),
             )
         );
 
@@ -646,7 +644,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("bca").unwrap()
+                &AsciiString::from_str("bca").unwrap(),
             )
         );
 
@@ -655,7 +653,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("hogefoobar").unwrap(),
-                &AsciiString::from_str("oobarhoge").unwrap()
+                &AsciiString::from_str("oobarhoge").unwrap(),
             )
         );
     }
@@ -683,9 +681,78 @@ const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
+use proconio::marker::Chars;
+
 // abc000-A
 // #[fastout]
 fn main() {
-    input![n: usize];
+    input![h: usize, w: usize,k: i64, s:[Chars; h]];
+
+    let mut cumsum_col = vec![vec![0 as i64; w + 1]; h];
     //new type
+
+    for i in 0..h {
+        for (idx, s) in s[i].iter().enumerate() {
+            // //eprintln!("{}, {}, {}", i, idx, s);
+            cumsum_col[i][idx + 1] = cumsum_col[i][idx] + if *s == '1' { 1 } else { 0 };
+        }
+    }
+    //eprintln!("cumsum: {:?}", cumsum_col);
+
+    let mut ans = h * w * 10;
+    for i in 0..2usize.pow((h - 1) as u32) {
+        let mut div_points = vec![0];
+        let mut idx = 0;
+        let mut i = i;
+        //eprintln!("i: {}", i);
+        while i > 0 {
+            if i & 1 == 1 {
+                div_points.push(idx + 1);
+            }
+
+            idx += 1;
+            i >>= 1;
+        }
+        div_points.push(h);
+
+        //eprintln!("{:?}", div_points);
+
+        let mut div_ranges = vec![];
+        for i in 0..div_points.len() - 1 {
+            div_ranges.push(div_points[i]..div_points[i + 1]);
+        }
+        //eprintln!("{:?}", div_ranges);
+
+        let mut mid = 0;
+        let mut before = 0;
+
+        for w in 1..=w {
+            //eprintln!("w:{}, mid: {}, before: {:?}", w, mid, before);
+
+            let mut v = div_ranges.iter().map(
+                |r| cumsum_col.as_slice()[r.clone()].iter().map(|cumsum| cumsum[w] - cumsum[before]).collect_vec()
+            ).collect_vec();
+            //eprintln!("cumsum_v: {:?}", v);
+            let is_over = v.iter().any(|a| a.iter().sum::<i64>() > k);
+
+            if is_over {
+                //eprintln!("is_over1");
+                if w == 1 || div_ranges.iter().map(
+                    |r| cumsum_col.as_slice()[r.clone()].iter().map(|cumsum| cumsum[w] - cumsum[w - 1])
+                ).any(|a| a.sum::<i64>() > k) {
+                    mid = 100000000;
+                    //eprintln!("break1");
+                    break;
+                }
+                mid += 1;
+                before = w - 1;
+            }
+        }
+
+
+        //eprintln!("mid: {}", mid + div_ranges.len() - 1);
+        chmin!(ans, mid + div_ranges.len()-1);
+    }
+
+    println!("{}", ans);
 }
