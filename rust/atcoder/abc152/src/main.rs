@@ -12,16 +12,15 @@ use num_traits::{one, zero, Num, NumAssignOps, NumOps, One, Pow, Zero};
 // use proconio::derive_readable;
 use proconio::fastout;
 use proconio::input;
-use proconio::marker::Chars;
 // use std::convert::TryInto;
-use itertools::{assert_equal, concat};
+use itertools::{assert_equal, concat, Itertools};
 use lazy_static::lazy_static;
 // use libm::*;
 use std::cmp::*;
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 use std::io::*;
 use std::mem::swap;
-use std::ops::{BitAnd, Range, ShrAssign, Neg};
+use std::ops::{BitAnd, Range, ShrAssign, BitOr, Neg};
 use std::str::FromStr;
 use std::sync::Mutex;
 use superslice::*;
@@ -99,7 +98,6 @@ macro_rules! max {
 }
 
 
-
 // ##########
 // modint
 // https://qiita.com/drken/items/3b4fdf0a78e7a138cd9a
@@ -146,9 +144,9 @@ fn modinv_test() {
 // }
 #[allow(dead_code)]
 fn modpow<T>(a: T, n: T, modulo: T) -> T
-where
-    T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
-    <T as BitAnd>::Output: PartialEq + Num,
+    where
+        T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
+        <T as BitAnd>::Output: PartialEq + Num,
 {
     let mut res = one();
     let mut a = a;
@@ -271,7 +269,7 @@ mod uf {
     #[allow(dead_code)]
     #[derive(Debug)]
     pub struct UnionFind {
-    par: Vec<i64>,
+        par: Vec<i64>,
         rank: Vec<usize>,
     }
 
@@ -442,7 +440,7 @@ mod seg_tree {
             }
 
             return if a <= l && r <= b {
-                // eprintln!("{}, {}, {}, {}, {:?}", a, b, r, l, self.dat[k]);
+                // eprintln!("{}, {}, {}, {}, {:?}", a, b, l, r, self.dat[k]);
                 self.dat[k].clone()
             } else {
                 let vl = self.query_inner(selection_query, a, b, k * 2 + 1, l, (l + r) / 2);
@@ -573,7 +571,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("a").unwrap()
+                &AsciiString::from_str("a").unwrap(),
             )
         );
 
@@ -582,7 +580,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("aaabca").unwrap()
+                &AsciiString::from_str("aaabca").unwrap(),
             )
         );
 
@@ -591,7 +589,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("aaaaaa").unwrap(),
-                &AsciiString::from_str("aaaaaa").unwrap()
+                &AsciiString::from_str("aaaaaa").unwrap(),
             )
         );
 
@@ -600,7 +598,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("aacbaa").unwrap()
+                &AsciiString::from_str("aacbaa").unwrap(),
             )
         )
     }
@@ -637,7 +635,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("a").unwrap()
+                &AsciiString::from_str("a").unwrap(),
             )
         );
 
@@ -646,7 +644,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("bca").unwrap()
+                &AsciiString::from_str("bca").unwrap(),
             )
         );
 
@@ -655,7 +653,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("hogefoobar").unwrap(),
-                &AsciiString::from_str("oobarhoge").unwrap()
+                &AsciiString::from_str("oobarhoge").unwrap(),
             )
         );
     }
@@ -679,13 +677,49 @@ mod rolling_hash {
 #[allow(dead_code)]
 const BASE_ROLLING_HASH: u64 = 1158187049;
 #[allow(dead_code)]
-const MOD: usize = 1000000007;
+const MOD: usize = 1000_000_007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
-// abc000-A
+use proconio::marker::Chars;
+use seg_tree::*;
+use fixedbitset::FixedBitSet;
+use ascii::{AsciiString, AsciiChar, AsAsciiStr};
+use std::iter::FromIterator;
+use num_integer::gcd;
+
+
+#[allow(dead_code)]
+fn to_alphabet_num(a: AsciiChar) -> usize{
+    (a.as_byte() - AsciiChar::a.as_byte()) as usize
+}
+
+// abc157-E
 // #[fastout]
 fn main() {
-    input![n: usize];
-    //new type
+    input![n: usize, a: [usize; n]];
+
+    let mut ans = 0;
+
+    let mut lcm = a[0];
+    for i in 1..n{
+        let g = gcd(lcm, a[i]);
+
+        lcm = lcm * a[i];
+        lcm %= MOD;
+        // eprintln!("{}", g);
+        lcm *= modinv(g as i64, MOD as i64) as usize;
+        lcm %= MOD;
+    }
+
+    // eprintln!("{}", lcm);
+
+    for i in 0..n{
+        let diff = lcm * modinv(a[i] as isize, MOD as isize) as usize % MOD;
+        // eprintln!("diff[{}]: {}", i, diff);
+        ans += diff;
+        ans %= MOD;
+    }
+
+    println!("{}", ans);
 }
