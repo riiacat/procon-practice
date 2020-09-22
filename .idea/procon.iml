@@ -83,6 +83,8 @@
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc142/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc063/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc063/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc100/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc100/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc045/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc054/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc063/target" />
@@ -92,6 +94,7 @@
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc080/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc085/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc099/target" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc100/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc103/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc105/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc106/target" />
