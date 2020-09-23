@@ -25,8 +25,6 @@ use std::ops::{BitAnd, Range, ShrAssign, Neg};
 use std::str::FromStr;
 use std::sync::Mutex;
 use superslice::*;
-use fixedbitset::FixedBitSet;
-use num_integer::Integer;
 
 // ##########
 // read
@@ -685,68 +683,89 @@ const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
-// abc104-E
+#[allow(dead_code)]
+const INF: usize = 10_000_000_000;
+
+
+// abc148-F
 // #[fastout]
 fn main() {
-    input![d: usize, mut g: usize, pc: [(isize, isize); d]];
+    input![n: usize, u:usize, v:usize,
+        ab: [(usize, usize); n-1]];
     //new type
+    let ab = ab.iter().map(|(a,b)| (a-1, b-1)).collect_vec();
+    let tmp = u;
+    let u = v-1;
+    let v = tmp-1;
 
-    g /= 100;
-    let pc = pc.iter().map(|(p, c)| (*p, *c / 100)).collect_vec();
+    let mut adj = vec![vec![]; n];
+    for (a,b) in ab{
+        adj[a].push(b);
+        adj[b].push(a);
+    }
 
+    let mut diff2u = vec![INF; n];
+    diff2u[u] = 0;
 
-    let mut ans = std::isize::MAX / 100;
-    for i in 0..2usize.pow(d as u32){
-        // eprintln!("flags: {:010b}", i);
-        // let mut bs = FixedBitSet::with_capacity(20);
-        // bs.put(i);
-        // eprintln!("{:020b}", i);
-        // eprintln!("{:?}", bs);
+    let mut q = VecDeque::new();
+    q.push_back((u, diff2u[u]));
 
-        let mut score = 0;
-        let mut mid = 0;
-        let mut j = i;
-        let mut idx = 0;
-        while j > 0{
-            if j & 1 == 1{
-                score += pc[idx].1 + pc[idx].0 * (idx + 1) as isize;
-                mid += pc[idx].0;
-            }
-
-            idx += 1;
-            j >>= 1;
-        }
-
-        if score >= g as isize{
-            // eprintln!("###1 ans: {}, mid: {}", ans, mid);
-            chmin!(ans, mid);
-            continue;
-        }
-
-        for k in 0..d{
-            let idx = d-1 - k;
-
-            if (i >> idx) & 1 == 1{
+    while !q.is_empty(){
+        let (s, d) = q.pop_front().unwrap();
+        for to in adj[s].iter(){
+            if diff2u[*to] != INF {
                 continue;
             }
 
-            if score + pc[idx].0 * (idx + 1) as isize >= g as isize{
-                let (div, modu) = (g-score as usize).div_mod_floor(&(idx + 1));
-                mid += div as isize + if modu > 0 {1}else{0};
-                // eprintln!("###2 ans: {}, mid: {}", ans, mid);
-                chmin!(ans, mid);
-                break;
-            }else{
-                score += pc[idx].0 * (idx + 1) as isize;
-                mid += pc[idx].0;
-            }
-        }
-
-        if score >= g as isize{
-            // eprintln!("###3 ans: {}, mid: {}", ans, mid);
-            chmin!(ans, mid);
+            diff2u[*to] = d + 1;
+            q.push_back((*to, diff2u[*to]));
         }
     }
 
+    let mut diff2v = vec![INF; n];
+    // let mut diff2v2 = vec![INF; n];
+
+    diff2v[v] = 0;
+    let mut q = VecDeque::new();
+    q.push_back((v, diff2v[v]));
+
+    let mut ans: isize = -1;
+
+    if adj[v].len() == 1{
+        // eprintln!("ans initted: {}",  diff2u[v] / 2);
+        ans = diff2u[v] as isize / 2 ;
+    }
+
+    while !q.is_empty(){
+        let (s, d) = q.pop_front().unwrap();
+
+        let mut is_leaf = true;
+        for to in adj[s].iter(){
+            if diff2v[*to] != INF {
+                continue;
+            }
+            is_leaf = false;
+
+            diff2v[*to] = d + 1;
+
+            if diff2u[*to] <= diff2v[*to]{
+                continue;
+            }
+
+            q.push_back((*to, diff2v[*to]));
+        }
+
+        if adj[s].len() == 1{
+            // eprintln!()
+            // eprintln!("s: {}, {}, {}", s, ans, diff2u[s]);
+            chmax!(ans, diff2u[s] as isize -1); // / 2 * 2);
+        }
+    }
+
+    // eprintln!("{:?}", diff2u);
+    // eprintln!("{:?}", diff2v);
+
     println!("{}", ans);
+
+
 }
