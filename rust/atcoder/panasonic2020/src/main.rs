@@ -25,7 +25,7 @@ use std::ops::{BitAnd, Range, ShrAssign, Neg};
 use std::str::FromStr;
 use std::sync::Mutex;
 use superslice::*;
-use ascii::AsciiChar;
+use ascii::{AsciiChar, AsciiString};
 
 // ##########
 // read
@@ -662,20 +662,6 @@ mod rolling_hash {
     }
 }
 
-#[allow(dead_code)]
-fn to_alphabet_num(a: AsciiChar) -> usize{
-    (a.as_byte() - AsciiChar::a.as_byte()) as usize
-}
-
-#[allow(dead_code)]
-fn num_to_alphabet(a: usize) -> Option<AsciiChar>{
-    let a = a.to_u8().map(
-        |a| AsciiChar::from_ascii(AsciiChar::a.as_byte() + a as u8).ok()
-    );
-    return a.flatten();
-}
-
-
 // ##########
 // lazy_static!
 // ##########
@@ -698,9 +684,44 @@ const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
+#[allow(dead_code)]
+fn to_alphabet_num(a: AsciiChar) -> usize{
+    (a.as_byte() - AsciiChar::a.as_byte()) as usize
+}
+
+#[allow(dead_code)]
+fn num_to_alphabet(a: usize) -> Option<AsciiChar>{
+    let a = a.to_u8().map(
+        |a| AsciiChar::from_ascii(AsciiChar::a.as_byte() + a as u8).ok()
+    );
+    return a.flatten();
+}
+
+
 // abc000-A
 // #[fastout]
 fn main() {
     input![n: usize];
     //new type
+
+    let mut seed = AsciiString::new();
+    seed.push(AsciiChar::a);
+    dfs(seed,0, n);
+}
+
+fn dfs(current: AsciiString, max: usize, n: usize){
+    // eprintln!("{}, {}", current, can_be_use);
+    if current.len() == n{
+        println!("{}", current);
+        return;
+
+    }
+
+    for i in 0..=max+1{
+        let suffix = num_to_alphabet(i).unwrap();
+        let mut new_str = current.clone();
+        new_str.push(suffix);
+
+        dfs(new_str, max!(i, max), n);
+    }
 }
