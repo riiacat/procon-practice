@@ -107,6 +107,10 @@
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/diverta2019-2/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/diverta2019/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/diverta2019/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/template-project-cargo-concat/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/template-project-cargo-concat/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/practice2/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/practice2/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc045/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc054/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc063/target" />
@@ -158,6 +162,8 @@
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/diverta2019-2/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/diverta2019/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/panasonic2020/target" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/practice2/target" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/template-project-cargo-concat/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/template-project/target" />
     </content>
     <orderEntry type="inheritedJdk" />

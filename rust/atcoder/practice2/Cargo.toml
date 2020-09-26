@@ -14,6 +14,7 @@ path = "src/main.rs"
 # AtCoder 2020年言語アップデート以降に使用できるクレート。
 # 次のページに各クレートについての細かい紹介があります。
 # https://github.com/rust-lang-ja/atcoder-rust-resources/wiki/2020-Update
+ac-library-rs = { git ="https://github.com/rust-lang-ja/ac-library-rs.git", branch="replace-absolute-paths"}
 # 数値型の抽象化、多倍長整数、複素数、分数、及び整数型の拡張
 #num = "=0.2.1"
 num-bigint = "=0.2.6"
