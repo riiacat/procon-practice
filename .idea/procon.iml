@@ -117,6 +117,8 @@
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc084/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/agc034/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/agc034/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/workplace/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/workplace/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc045/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc054/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc063/target" />
@@ -172,6 +174,7 @@
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/diverta2019/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/panasonic2020/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/practice2/target" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/workplace/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/template-project-cargo-concat/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/template-project/target" />
     </content>
