@@ -115,6 +115,8 @@
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abl001/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc084/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/abc084/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/agc034/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/agc034/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc045/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc054/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc063/target" />
@@ -165,6 +167,7 @@
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc178/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc179/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abl001/target" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/agc034/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/diverta2019-2/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/diverta2019/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/panasonic2020/target" />
