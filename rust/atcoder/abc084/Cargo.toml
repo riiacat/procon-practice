@@ -8,7 +8,7 @@ edition = "2018"
 
 [[bin]]
 name = "main"
-path = "src/mainD.rs"
+path = "src/main.rs"
 
 [dependencies]
 # AtCoder 2020年言語アップデート以降に使用できるクレート。
