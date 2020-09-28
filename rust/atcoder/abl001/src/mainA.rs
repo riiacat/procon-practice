@@ -486,7 +486,6 @@ pub mod convolution {
         }
     }
 }
-
 pub mod dsu {
     /// Implement (union by size) + (path compression)
     /// Reference:
@@ -578,7 +577,6 @@ pub mod dsu {
         }
     }
 }
-
 pub mod fenwicktree {
     // Reference: https://en.wikipedia.org/wiki/Fenwick_tree
     pub struct FenwickTree<T> {
@@ -618,7 +616,7 @@ pub mod fenwicktree {
         /// Returns data[l] + ... + data[r - 1].
         pub fn sum(&self, l: usize, r: usize) -> T
             where
-                T: std::ops::Sub<Output=T>,
+                T: std::ops::Sub<Output = T>,
         {
             self.accum(r) - self.accum(l)
         }
@@ -641,7 +639,6 @@ pub mod fenwicktree {
         }
     }
 }
-
 pub mod internal_bit {
     // Skipped:
     //
@@ -674,11 +671,9 @@ pub mod internal_bit {
         }
     }
 }
-
 pub mod internal_math {
     // remove this after dependencies has been added
     #![allow(dead_code)]
-
     use std::mem::swap;
 
     /// # Arguments
@@ -907,7 +902,6 @@ pub mod internal_math {
     mod tests {
         #![allow(clippy::unreadable_literal)]
         #![allow(clippy::cognitive_complexity)]
-
         use super::super::internal_math::{
             inv_gcd, is_prime, pow_mod, primitive_root, safe_mod, Barrett,
         };
@@ -1129,7 +1123,6 @@ pub mod internal_math {
         }
     }
 }
-
 pub mod internal_queue {
     #![allow(dead_code)]
 
@@ -1236,7 +1229,6 @@ pub mod internal_queue {
         }
     }
 }
-
 pub mod internal_scc {
     pub struct Csr<E> {
         start: Vec<usize>,
@@ -1373,7 +1365,6 @@ pub mod internal_scc {
         }
     }
 }
-
 pub mod internal_type_traits {
     use std::{
         fmt,
@@ -1402,12 +1393,12 @@ pub mod internal_type_traits {
     + Sync
     + Copy
     + Ord
-    + Not<Output=Self>
-    + Add<Output=Self>
-    + Sub<Output=Self>
-    + Mul<Output=Self>
-    + Div<Output=Self>
-    + Rem<Output=Self>
+    + Not<Output = Self>
+    + Add<Output = Self>
+    + Sub<Output = Self>
+    + Mul<Output = Self>
+    + Div<Output = Self>
+    + Rem<Output = Self>
     + AddAssign
     + SubAssign
     + MulAssign
@@ -1415,14 +1406,14 @@ pub mod internal_type_traits {
     + RemAssign
     + Sum
     + Product
-    + BitOr<Output=Self>
-    + BitAnd<Output=Self>
-    + BitXor<Output=Self>
+    + BitOr<Output = Self>
+    + BitAnd<Output = Self>
+    + BitXor<Output = Self>
     + BitOrAssign
     + BitAndAssign
     + BitXorAssign
-    + Shl<Output=Self>
-    + Shr<Output=Self>
+    + Shl<Output = Self>
+    + Shr<Output = Self>
     + ShlAssign
     + ShrAssign
     + fmt::Display
@@ -1433,7 +1424,8 @@ pub mod internal_type_traits {
     + One
     + BoundedBelow
     + BoundedAbove
-    {}
+    {
+    }
 
     /// Class that has additive identity element
     pub trait Zero {
@@ -1493,7 +1485,6 @@ pub mod internal_type_traits {
 
     impl_integral!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize);
 }
-
 pub mod lazysegtree {
     use super::internal_bit::ceil_pow2;
     use super::Monoid;
@@ -1521,13 +1512,11 @@ pub mod lazysegtree {
             Self::new(0)
         }
     }
-
     impl<F: MapMonoid> LazySegtree<F> {
         pub fn new(n: usize) -> Self {
             vec![F::identity_element(); n].into()
         }
     }
-
     impl<F: MapMonoid> From<Vec<<F::M as Monoid>::S>> for LazySegtree<F> {
         fn from(v: Vec<<F::M as Monoid>::S>) -> Self {
             let n = v.len();
@@ -1765,7 +1754,6 @@ pub mod lazysegtree {
         d: Vec<<F::M as Monoid>::S>,
         lz: Vec<F::F>,
     }
-
     impl<F> LazySegtree<F>
         where
             F: MapMonoid,
@@ -1788,7 +1776,6 @@ pub mod lazysegtree {
 
     // TODO is it useful?
     use std::fmt::{Debug, Error, Formatter, Write};
-
     impl<F> Debug for LazySegtree<F>
         where
             F: MapMonoid,
@@ -1819,7 +1806,6 @@ pub mod lazysegtree {
         use super::{LazySegtree, MapMonoid};
 
         struct MaxAdd;
-
         impl MapMonoid for MaxAdd {
             type M = Max<i32>;
             type F = i32;
@@ -1918,7 +1904,6 @@ pub mod lazysegtree {
         }
     }
 }
-
 pub mod math {
     use super::internal_math;
 
@@ -2025,9 +2010,7 @@ pub mod math {
     mod tests {
         #![allow(clippy::unreadable_literal)]
         #![allow(clippy::cognitive_complexity)]
-
         use super::*;
-
         #[test]
         fn test_pow_mod() {
             assert_eq!(pow_mod(0, 0, 1), 0);
@@ -2126,10 +2109,8 @@ pub mod math {
         }
     }
 }
-
 pub mod maxflow {
     #![allow(dead_code)]
-
     use super::internal_queue::SimpleQueue;
     use super::internal_type_traits::Integral;
     use std::cmp::min;
@@ -2455,7 +2436,6 @@ pub mod maxflow {
         }
     }
 }
-
 pub mod mincostflow {
     use super::internal_type_traits::Integral;
 
@@ -2475,7 +2455,7 @@ pub mod mincostflow {
 
     impl<T> MinCostFlowGraph<T>
         where
-            T: Integral + std::ops::Neg<Output=T>,
+            T: Integral + std::ops::Neg<Output = T>,
     {
         pub fn new(n: usize) -> Self {
             Self {
@@ -2659,7 +2639,6 @@ pub mod mincostflow {
         }
     }
 }
-
 pub mod modint {
     //! Structs that treat the modular arithmetic.
     //!
@@ -2952,11 +2931,11 @@ pub mod modint {
     + Hash
     + fmt::Display
     + fmt::Debug
-    + Neg<Output=Self>
-    + Add<Output=Self>
-    + Sub<Output=Self>
-    + Mul<Output=Self>
-    + Div<Output=Self>
+    + Neg<Output = Self>
+    + Add<Output = Self>
+    + Sub<Output = Self>
+    + Mul<Output = Self>
+    + Div<Output = Self>
     + AddAssign
     + SubAssign
     + MulAssign
@@ -3428,7 +3407,6 @@ pub mod modint {
         }
     }
 }
-
 pub mod scc {
     use super::internal_scc;
 
@@ -3494,7 +3472,6 @@ pub mod scc {
         }
     }
 }
-
 pub mod segtree {
     use super::internal_bit::ceil_pow2;
     use super::internal_type_traits::{BoundedAbove, BoundedBelow, One, Zero};
@@ -3511,7 +3488,6 @@ pub mod segtree {
     }
 
     pub struct Max<S>(Infallible, PhantomData<fn() -> S>);
-
     impl<S> Monoid for Max<S>
         where
             S: Copy + Ord + BoundedBelow,
@@ -3526,7 +3502,6 @@ pub mod segtree {
     }
 
     pub struct Min<S>(Infallible, PhantomData<fn() -> S>);
-
     impl<S> Monoid for Min<S>
         where
             S: Copy + Ord + BoundedAbove,
@@ -3541,10 +3516,9 @@ pub mod segtree {
     }
 
     pub struct Additive<S>(Infallible, PhantomData<fn() -> S>);
-
     impl<S> Monoid for Additive<S>
         where
-            S: Copy + Add<Output=S> + Zero,
+            S: Copy + Add<Output = S> + Zero,
     {
         type S = S;
         fn identity() -> Self::S {
@@ -3556,10 +3530,9 @@ pub mod segtree {
     }
 
     pub struct Multiplicative<S>(Infallible, PhantomData<fn() -> S>);
-
     impl<S> Monoid for Multiplicative<S>
         where
-            S: Copy + Mul<Output=S> + One,
+            S: Copy + Mul<Output = S> + One,
     {
         type S = S;
         fn identity() -> Self::S {
@@ -3575,13 +3548,11 @@ pub mod segtree {
             Segtree::new(0)
         }
     }
-
     impl<M: Monoid> Segtree<M> {
         pub fn new(n: usize) -> Segtree<M> {
             vec![M::identity(); n].into()
         }
     }
-
     impl<M: Monoid> From<Vec<M::S>> for Segtree<M> {
         fn from(v: Vec<M::S>) -> Self {
             let n = v.len();
@@ -3596,7 +3567,6 @@ pub mod segtree {
             ret
         }
     }
-
     impl<M: Monoid> Segtree<M> {
         pub fn set(&mut self, mut p: usize, x: M::S) {
             assert!(p < self.n);
@@ -3819,7 +3789,6 @@ pub mod segtree {
         }
     }
 }
-
 pub mod string {
     #![allow(clippy::many_single_char_names)]
 
@@ -3883,7 +3852,6 @@ pub mod string {
     }
 
     enum DefaultThreshold {}
-
     impl Threshold for DefaultThreshold {
         fn threshold_naive() -> usize {
             10
@@ -4142,7 +4110,6 @@ pub mod string {
         use super::*;
 
         enum ZeroThreshold {}
-
         impl Threshold for ZeroThreshold {
             fn threshold_naive() -> usize {
                 0
@@ -4215,7 +4182,6 @@ pub mod string {
         }
     }
 }
-
 pub mod twosat {
     use super::internal_scc;
 
@@ -4224,7 +4190,6 @@ pub mod twosat {
         scc: internal_scc::SccGraph,
         answer: Vec<bool>,
     }
-
     impl TwoSat {
         pub fn new(n: usize) -> Self {
             TwoSat {
@@ -4256,9 +4221,7 @@ pub mod twosat {
     #[cfg(test)]
     mod tests {
         #![allow(clippy::many_single_char_names)]
-
         use super::*;
-
         #[test]
         fn solve_alpc_h_sample1() {
             // https://atcoder.jp/contests/practice2/tasks/practice2_h
@@ -4335,7 +4298,6 @@ pub mod twosat {
         }
     }
 }
-
 use convolution::*;
 use dsu::*;
 use fenwicktree::*;
@@ -4379,7 +4341,6 @@ use std::str::FromStr;
 use std::sync::Mutex;
 use superslice::*;
 use ascii::AsciiChar;
-use itertools_num::ItertoolsNum;
 
 
 // ##########
@@ -4455,6 +4416,7 @@ macro_rules! max {
 }
 
 
+
 // ##########
 // modint
 // https://qiita.com/drken/items/3b4fdf0a78e7a138cd9a
@@ -4501,9 +4463,9 @@ fn modinv_test() {
 // }
 #[allow(dead_code)]
 fn modpow<T>(a: T, n: T, modulo: T) -> T
-    where
-        T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
-        <T as BitAnd>::Output: PartialEq + Num,
+where
+    T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
+    <T as BitAnd>::Output: PartialEq + Num,
 {
     let mut res = one();
     let mut a = a;
@@ -4626,7 +4588,7 @@ mod uf {
     #[allow(dead_code)]
     #[derive(Debug)]
     pub struct UnionFind {
-        pub par: Vec<i64>,
+    par: Vec<i64>,
         rank: Vec<usize>,
     }
 
@@ -4928,7 +4890,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("a").unwrap(),
+                &AsciiString::from_str("a").unwrap()
             )
         );
 
@@ -4937,7 +4899,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("aaabca").unwrap(),
+                &AsciiString::from_str("aaabca").unwrap()
             )
         );
 
@@ -4946,7 +4908,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("aaaaaa").unwrap(),
-                &AsciiString::from_str("aaaaaa").unwrap(),
+                &AsciiString::from_str("aaaaaa").unwrap()
             )
         );
 
@@ -4955,7 +4917,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("aacbaa").unwrap(),
+                &AsciiString::from_str("aacbaa").unwrap()
             )
         )
     }
@@ -4992,7 +4954,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("a").unwrap(),
+                &AsciiString::from_str("a").unwrap()
             )
         );
 
@@ -5001,7 +4963,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("bca").unwrap(),
+                &AsciiString::from_str("bca").unwrap()
             )
         );
 
@@ -5010,19 +4972,19 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("hogefoobar").unwrap(),
-                &AsciiString::from_str("oobarhoge").unwrap(),
+                &AsciiString::from_str("oobarhoge").unwrap()
             )
         );
     }
 }
 
 #[allow(dead_code)]
-fn to_alphabet_num(a: AsciiChar) -> usize {
+fn to_alphabet_num(a: AsciiChar) -> usize{
     (a.as_byte() - AsciiChar::a.as_byte()) as usize
 }
 
 #[allow(dead_code)]
-fn num_to_alphabet(a: usize) -> Option<AsciiChar> {
+fn num_to_alphabet(a: usize) -> Option<AsciiChar>{
     let a = a.to_u8().map(
         |a| AsciiChar::from_ascii(AsciiChar::a.as_byte() + a as u8).ok()
     );
@@ -5033,11 +4995,10 @@ fn num_to_alphabet(a: usize) -> Option<AsciiChar> {
 // ##########
 // lazy_static!
 // ##########
-lazy_static! {
-    static ref MODS: Mutex<Vec<usize>> = Mutex::default();
-    static ref MODSC: Mutex<Vec<usize>> = Mutex::default();
-    // static ref W: Mutex<Vec<i32>> = Mutex::default();
-}
+// lazy_static! {
+//     static ref H: Mutex<Vec<i32>> = Mutex::default();
+//     static ref W: Mutex<Vec<i32>> = Mutex::default();
+// }
 // let mut values = VALUES.lock().unwrap();
 // values.extend_from_slice(&[1, 2, 3, 4]);
 // assert_eq!(&*values, &[1, 2, 3, 4]);
@@ -5049,159 +5010,20 @@ lazy_static! {
 #[allow(dead_code)]
 const BASE_ROLLING_HASH: u64 = 1158187049;
 #[allow(dead_code)]
-const MOD: usize = 998_244_353;
+const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
-
-// struct M{}
-// impl Monoid for M {
-//     type S = (usize, usize, usize);
-//
-//     // now, d, sum
-//     fn identity() -> Self::S {
-//         (1,0,1)
-//     }
-//
-//     fn binary_operation(a: &Self::S, b: &Self::S) -> Self::S {
-//         let (n1, d1, s1) = a;
-//         let (n2, d2, s2) = b;
-//         // eprintln!("{:?}, {:?}", a,b);
-//
-//
-//         (0,0, (s1 + s2) % MOD)
-//     }
-// }
-//
-// impl MapMonoid for M {
-//     type M = M;
-//     type F = (usize, usize);
-//
-//     fn identity_map() -> Self::F {(0, 0)}
-//
-//     fn mapping(f: &Self::F, x: &<M as segtree::Monoid>::S) -> <M as segtree::Monoid>::S {
-//         let (n, d, s) = x;
-//         if f.0 > 0 {
-//             // eprintln!("map before: {:?}", x);
-//             // eprintln!("map after: {:?}",  (1-z, 1-o, *a));
-//             {
-//                 let mods = MODS.lock().unwrap();
-//                 let a = (f.0, *d, f.0 * mods[*d] % MOD);
-//                 eprintln!("mapping: {:?} -> {:?}", x, a);
-//                 a
-//             }
-//         }else{
-//             *x
-//         }
-//     }
-//
-//     fn composition(f: &Self::F, g: &Self::F) -> Self::F {
-//         *f
-//     }
-// }
-
-struct M{}
-impl Monoid for M {
-    type S = (usize, (usize, usize), usize);
-
-    // now, d, sum
-    fn identity() -> Self::S {
-        (1,(0,0),1)
-    }
-
-    fn binary_operation(a: &Self::S, b: &Self::S) -> Self::S {
-        let (n1, (d11, d12), s1) = a;
-        let (n2, (d21, d22), s2) = b;
-        // eprintln!("{:?}, {:?}", a,b);
-
-
-        (0,(*d11,*d22), (s1 + s2) % MOD)
-    }
-}
-
-impl MapMonoid for M {
-    type M = M;
-    type F = (usize, usize);
-
-    fn identity_map() -> Self::F {(0, 0)}
-
-    fn mapping(f: &Self::F, x: &<M as segtree::Monoid>::S) -> <M as segtree::Monoid>::S {
-        let (n, d, s) = x;
-        if f.0 > 0 {
-            // eprintln!("map before: {:?}", x);
-            // eprintln!("map after: {:?}",  (1-z, 1-o, *a));
-            {
-                // let modsc = MODS.lock().unwrap();
-                let modsc = MODSC.lock().unwrap();
-                // f.0 * mods[*d] % MOD;
-                let m = if d.1 > 0 {(modsc[d.0] + MOD - modsc[d.1-1]) % MOD }
-                else {modsc[d.0]};
-                let a = (f.0, *d, f.0 * m % MOD);
-                eprintln!("mapping: {:?} -> {:?}", x, a);
-                a
-            }
-        }else{
-            *x
-        }
-    }
-
-    fn composition(f: &Self::F, g: &Self::F) -> Self::F {
-        if *f == (0, 0){
-            *g
-        }else if *g == (0, 0){
-            *f
-        }else {
-            *g
-        }
-    }
-}
-
-// abl001-E
+// abl001-A
 // #[fastout]
 fn main() {
-    input![n: usize, q: usize, lrd:[(usize, usize, usize); q]];
+    input![n: usize];
+    //new type
 
-    // string::
-    let mut lst: LazySegtree<M> = LazySegtree::new(n);
-
-    // eprintln!("1#####");
-    {
-        let mut mods = MODS.lock().unwrap();
-        *mods = vec![0; 200020];
-        let mut tens = 1;
-        for i in 0..200020 {
-            // eprintln!("2.5##### {}", i);
-            mods[i]= tens;
-            tens *= 10;
-            tens %= MOD;
-        }
-        // eprintln!("2#####");
-        let mut modsc = MODSC.lock().unwrap();
-        *modsc = vec![0; 200020];
-        modsc[0] = mods[0];
-        for i in 1..200020{
-            modsc[i] = (modsc[i-1] + mods[i]) % MOD;
-        }
-
-        for i in 0..n {
-            // eprintln!("3##### {}", i);
-            lst.set(i, (1, (n - i-1, n - i-1), mods[n - i-1]));
-        }
-        // eprintln!("4#####");
-        // eprintln!("{:?}", mods);
-        // eprintln!("{:?}", modsc);
-    }
-    // eprintln!("{:?}", lst);
-
-    for (l, r, d) in lrd{
-        lst.apply_range(l-1, r, (d, 0));
-        println!("{}", (lst.all_prod().2)%MOD);
-        println!("{}", (lst.all_prod().2)%MOD);
-        // eprintln!("{:?}", lst);
-        // eprintln!("######");
+    // convolution(&v1, &v2);
+    for _ in 0..n{
+        print!("ACL");
     }
 
-
-    // println!("{}", uf.groups().len()-1);
     // println!("{:?}", conv);
 }

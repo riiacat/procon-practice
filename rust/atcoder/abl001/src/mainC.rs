@@ -4379,7 +4379,6 @@ use std::str::FromStr;
 use std::sync::Mutex;
 use superslice::*;
 use ascii::AsciiChar;
-use itertools_num::ItertoolsNum;
 
 
 // ##########
@@ -5033,11 +5032,10 @@ fn num_to_alphabet(a: usize) -> Option<AsciiChar> {
 // ##########
 // lazy_static!
 // ##########
-lazy_static! {
-    static ref MODS: Mutex<Vec<usize>> = Mutex::default();
-    static ref MODSC: Mutex<Vec<usize>> = Mutex::default();
-    // static ref W: Mutex<Vec<i32>> = Mutex::default();
-}
+// lazy_static! {
+//     static ref H: Mutex<Vec<i32>> = Mutex::default();
+//     static ref W: Mutex<Vec<i32>> = Mutex::default();
+// }
 // let mut values = VALUES.lock().unwrap();
 // values.extend_from_slice(&[1, 2, 3, 4]);
 // assert_eq!(&*values, &[1, 2, 3, 4]);
@@ -5049,159 +5047,39 @@ lazy_static! {
 #[allow(dead_code)]
 const BASE_ROLLING_HASH: u64 = 1158187049;
 #[allow(dead_code)]
-const MOD: usize = 998_244_353;
+const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
-
-// struct M{}
-// impl Monoid for M {
-//     type S = (usize, usize, usize);
-//
-//     // now, d, sum
-//     fn identity() -> Self::S {
-//         (1,0,1)
-//     }
-//
-//     fn binary_operation(a: &Self::S, b: &Self::S) -> Self::S {
-//         let (n1, d1, s1) = a;
-//         let (n2, d2, s2) = b;
-//         // eprintln!("{:?}, {:?}", a,b);
-//
-//
-//         (0,0, (s1 + s2) % MOD)
-//     }
-// }
-//
-// impl MapMonoid for M {
-//     type M = M;
-//     type F = (usize, usize);
-//
-//     fn identity_map() -> Self::F {(0, 0)}
-//
-//     fn mapping(f: &Self::F, x: &<M as segtree::Monoid>::S) -> <M as segtree::Monoid>::S {
-//         let (n, d, s) = x;
-//         if f.0 > 0 {
-//             // eprintln!("map before: {:?}", x);
-//             // eprintln!("map after: {:?}",  (1-z, 1-o, *a));
-//             {
-//                 let mods = MODS.lock().unwrap();
-//                 let a = (f.0, *d, f.0 * mods[*d] % MOD);
-//                 eprintln!("mapping: {:?} -> {:?}", x, a);
-//                 a
-//             }
-//         }else{
-//             *x
-//         }
-//     }
-//
-//     fn composition(f: &Self::F, g: &Self::F) -> Self::F {
-//         *f
-//     }
-// }
-
-struct M{}
-impl Monoid for M {
-    type S = (usize, (usize, usize), usize);
-
-    // now, d, sum
-    fn identity() -> Self::S {
-        (1,(0,0),1)
-    }
-
-    fn binary_operation(a: &Self::S, b: &Self::S) -> Self::S {
-        let (n1, (d11, d12), s1) = a;
-        let (n2, (d21, d22), s2) = b;
-        // eprintln!("{:?}, {:?}", a,b);
-
-
-        (0,(*d11,*d22), (s1 + s2) % MOD)
-    }
-}
-
-impl MapMonoid for M {
-    type M = M;
-    type F = (usize, usize);
-
-    fn identity_map() -> Self::F {(0, 0)}
-
-    fn mapping(f: &Self::F, x: &<M as segtree::Monoid>::S) -> <M as segtree::Monoid>::S {
-        let (n, d, s) = x;
-        if f.0 > 0 {
-            // eprintln!("map before: {:?}", x);
-            // eprintln!("map after: {:?}",  (1-z, 1-o, *a));
-            {
-                // let modsc = MODS.lock().unwrap();
-                let modsc = MODSC.lock().unwrap();
-                // f.0 * mods[*d] % MOD;
-                let m = if d.1 > 0 {(modsc[d.0] + MOD - modsc[d.1-1]) % MOD }
-                else {modsc[d.0]};
-                let a = (f.0, *d, f.0 * m % MOD);
-                eprintln!("mapping: {:?} -> {:?}", x, a);
-                a
-            }
-        }else{
-            *x
-        }
-    }
-
-    fn composition(f: &Self::F, g: &Self::F) -> Self::F {
-        if *f == (0, 0){
-            *g
-        }else if *g == (0, 0){
-            *f
-        }else {
-            *g
-        }
-    }
-}
-
-// abl001-E
+// abl001-B
 // #[fastout]
 fn main() {
-    input![n: usize, q: usize, lrd:[(usize, usize, usize); q]];
+    input![n: usize, m: usize, ab:[(usize, usize); m]];
 
-    // string::
-    let mut lst: LazySegtree<M> = LazySegtree::new(n);
+    // let mut uf = uf::UnionFind::new(n);
+    let mut uf = dsu::Dsu::new(n);
 
-    // eprintln!("1#####");
-    {
-        let mut mods = MODS.lock().unwrap();
-        *mods = vec![0; 200020];
-        let mut tens = 1;
-        for i in 0..200020 {
-            // eprintln!("2.5##### {}", i);
-            mods[i]= tens;
-            tens *= 10;
-            tens %= MOD;
-        }
-        // eprintln!("2#####");
-        let mut modsc = MODSC.lock().unwrap();
-        *modsc = vec![0; 200020];
-        modsc[0] = mods[0];
-        for i in 1..200020{
-            modsc[i] = (modsc[i-1] + mods[i]) % MOD;
-        }
-
-        for i in 0..n {
-            // eprintln!("3##### {}", i);
-            lst.set(i, (1, (n - i-1, n - i-1), mods[n - i-1]));
-        }
-        // eprintln!("4#####");
-        // eprintln!("{:?}", mods);
-        // eprintln!("{:?}", modsc);
-    }
-    // eprintln!("{:?}", lst);
-
-    for (l, r, d) in lrd{
-        lst.apply_range(l-1, r, (d, 0));
-        println!("{}", (lst.all_prod().2)%MOD);
-        println!("{}", (lst.all_prod().2)%MOD);
-        // eprintln!("{:?}", lst);
-        // eprintln!("######");
+    for (a,b) in ab{
+        uf.merge(a-1, b-1);
+        // uf.unite(a-1, b-1);
     }
 
 
-    // println!("{}", uf.groups().len()-1);
+    // for (a,b) in ab{
+    //     uf.unite(a-1, b-1);
+    //     uf.unite(a-1, b-1);
+    // }
+    //
+    // let par = uf.par;
+    //
+    // eprintln!("{:?}", par);
+    // let mut c: i64 = 0;
+    // for p in par.iter(){
+    //     if *p < 0 {
+    //         c += 1;
+    //     }
+    // }
+
+    println!("{}", uf.groups().len()-1);
     // println!("{:?}", conv);
 }
