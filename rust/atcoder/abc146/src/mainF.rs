@@ -3708,7 +3708,7 @@ pub mod segtree {
         n: usize,
         size: usize,
         log: usize,
-        d: Vec<M::S>,
+        pub d: Vec<M::S>,
     }
 
     #[cfg(test)]
@@ -4341,6 +4341,7 @@ use std::str::FromStr;
 use std::sync::Mutex;
 use superslice::*;
 use ascii::AsciiChar;
+use crate::seg_tree::SegTree;
 
 
 // ##########
@@ -4463,9 +4464,9 @@ fn modinv_test() {
 // }
 #[allow(dead_code)]
 fn modpow<T>(a: T, n: T, modulo: T) -> T
-where
-    T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
-    <T as BitAnd>::Output: PartialEq + Num,
+    where
+        T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
+        <T as BitAnd>::Output: PartialEq + Num,
 {
     let mut res = one();
     let mut a = a;
@@ -4588,7 +4589,7 @@ mod uf {
     #[allow(dead_code)]
     #[derive(Debug)]
     pub struct UnionFind {
-    par: Vec<i64>,
+        par: Vec<i64>,
         rank: Vec<usize>,
     }
 
@@ -5010,45 +5011,47 @@ fn num_to_alphabet(a: usize) -> Option<AsciiChar>{
 // ##########
 // SegTree's monoid
 // ##########
-// struct M{}
-// impl Monoid for M {
-//     type S = (isize, isize, isize);
-//
-//     fn identity() -> Self::S {
-//         (0,0,0)
-//     }
-//
-//     fn binary_operation(a: &Self::S, b: &Self::S) -> Self::S {
-//         let (z1, o1, a1) = a;
-//         let (z2, o2, a2) = b;
-//         // eprintln!("{:?}, {:?}", a,b);
-//         (z1 + z2, o1 + o2, a1 + a2 + o1 * z2)
-//     }
-// }
-//
-// impl MapMonoid for M {
-//     type M = M;
-//     type F = bool;
-//
-//     fn identity_map() -> Self::F {
-//         false
-//     }
-//
-//     fn mapping(f: &Self::F, x: &<M as segtree::Monoid>::S) -> <M as segtree::Monoid>::S {
-//         let (z, o, a) = x;
-//         if *f {
-//             // eprintln!("map before: {:?}", x);
-//             // eprintln!("map after: {:?}",  (1-z, 1-o, *a));
-//             (*o, *z, o*z - *a)
-//         }else{
-//             *x
-//         }
-//     }
-//
-//     fn composition(f: &Self::F, g: &Self::F) -> Self::F {
-//         f ^ g
-//     }
-// }
+
+#[derive(Debug, PartialEq, Eq)]
+struct M{}
+impl Monoid for M {
+    type S = (usize, usize);
+
+    fn identity() -> Self::S {
+        (0,INF)
+    }
+
+    fn binary_operation(a: &Self::S, b: &Self::S) -> Self::S {
+        let (idx1, v1)= a;
+        let (idx2, v2 )= b;
+        // eprintln!("{:?}, {:?}", a,b);
+
+        if v1 <= v2 {
+            *a
+        }else{
+            *b
+        }
+    }
+}
+
+impl MapMonoid for M {
+    type M = M;
+    type F = usize;
+
+    fn identity_map() -> Self::F {
+        0
+    }
+
+    fn mapping(f: &Self::F, x: &<M as segtree::Monoid>::S) -> <M as segtree::Monoid>::S {
+        let (idx, v) = x;
+
+        (*idx, *f)
+    }
+
+    fn composition(f: &Self::F, g: &Self::F) -> Self::F {
+        *f + *g
+    }
+}
 
 // MOD, Combination関連に使う定数
 #[allow(dead_code)]
@@ -5060,18 +5063,61 @@ const MAXN_CONV: usize = 510000;
 #[allow(dead_code)]
 const INF: usize = 1_000_000_000;
 
-// abc000-A
+
+// abc146-F
 // #[fastout]
 fn main() {
-    input![n: usize];
+    input![n: usize, m: usize, s: Chars];
     //new type
 
-    // let v1 = (0..10).map(|a| StaticModInt::<Mod1000000007>::new(a as usize)).collect_vec();
-    // let v2 = (10..20).map(|a| StaticModInt::<MOd>::new(a as usize)).collect_vec();
-    //
-    // convolution(&v1, &v2);
-    let conv = convolution_i64((0..10).map(|a| a).collect_vec().as_slice(),
-                    (10..20).map(|a| a).collect_vec().as_slice());
+    let mut froms = vec![-1; n+1];
+    froms[0] = 0;
 
-    println!("{:?}", conv);
+    let mut seg: segtree::Segtree<M> = segtree::Segtree::new(n + 1);
+
+    for i in 0..n+1{
+        seg.set(i, (i, INF));
+    }
+    seg.set(0, (0, 0));
+
+    for i in 1..n+1{
+        if s[i] == '1'{
+            continue;
+        }
+
+        let left = max(0, i as isize - m as isize) as usize;
+        let (idx, v) = seg.prod(left, i);
+        // eprintln!("l: {}, i: {}, idx: {}, v: {}", left, i, idx, v);
+        seg.set(i, (i, v + 1));
+        froms[i] = idx as isize;
+        // eprintln!("froms: {:?}",froms);
+    }
+
+    let mut anss = vec![];
+    let mut idx = n;
+
+    if seg.prod(n, n+1).1 == INF {
+        println!("-1");
+        return;
+    }
+
+
+    while idx > 0 {
+        anss.push(idx);
+        let idx2 = froms[idx];
+        idx = idx2 as usize;
+    }
+    // eprintln!("anss: {:?}",anss);
+
+    // println!("{}", anss.len()-1);
+    anss.reverse();
+
+    // eprintln!("seg: {:?}",seg.d);
+    // eprintln!("froms: {:?}",froms);
+    // eprintln!("anss: {:?}",anss);
+
+    print!("{} ", anss[0]);
+    for i in 1..anss.len(){
+        print!("{} ", anss[i] - anss[i-1]);
+    }
 }
