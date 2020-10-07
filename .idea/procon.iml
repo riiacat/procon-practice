@@ -121,6 +121,8 @@
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/workplace/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/workplace-atcoder-library/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/workplace-atcoder-library/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/workspace/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rust/atcoder/workspace/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc045/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc054/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/abc063/target" />
@@ -178,6 +180,7 @@
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/practice2/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/workplace-atcoder-library/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/workplace/target" />
+      <excludeFolder url="file://$MODULE_DIR$/rust/atcoder/workspace/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/template-project-cargo-concat/target" />
       <excludeFolder url="file://$MODULE_DIR$/rust/template-project/target" />
     </content>
