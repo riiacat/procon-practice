@@ -147,9 +147,9 @@ fn modinv_test() {
 // }
 #[allow(dead_code)]
 fn modpow<T>(a: T, n: T, modulo: T) -> T
-where
-    T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
-    <T as BitAnd>::Output: PartialEq + Num,
+    where
+        T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
+        <T as BitAnd>::Output: PartialEq + Num,
 {
     let mut res = one();
     let mut a = a;
@@ -272,7 +272,7 @@ mod uf {
     #[allow(dead_code)]
     #[derive(Debug)]
     pub struct UnionFind {
-    par: Vec<i64>,
+        par: Vec<i64>,
         rank: Vec<usize>,
     }
 
@@ -701,6 +701,16 @@ const MAXN_CONV: usize = 510000;
 // abc000-A
 // #[fastout]
 fn main() {
-    input![n: usize];
+    input![n: usize, mut x: isize, s: Chars];
     //new type
+
+    // let a = n / 2;
+    // let ans = 0;
+    for i in 0..n{
+        let d = if s[i] == 'o' {1} else {-1};
+        x += d as isize;
+        chmax!(x, 0);
+    }
+
+    println!("{}", x);
 }
