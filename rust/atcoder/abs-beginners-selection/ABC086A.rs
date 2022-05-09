@@ -695,14 +695,15 @@ const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
-// ABC081A
+// abc000-A
 // #[fastout]
 fn main() {
-    input![a: String];
+    input![a: isize, b: isize];
     //new type
-    let mut res = 0;
-    for s in a.chars().into_iter(){
-        res += s.to_digit(10).unwrap();
+
+    if(a % 2 == 0 || b % 2 == 0){
+        println!("Even");
+    }else{
+        println!("Odd");
     }
-    println!("{}", res)
 }

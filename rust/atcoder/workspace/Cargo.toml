@@ -3,7 +3,7 @@
 [package]
 name = "template-project"
 version = "0.1.0"
-authors = ["digika.ota <ota@digika.jp>"]
+authors = ["takuma.ota <otatakuma0714@gmail.com>"]
 edition = "2018"
 
 [[bin]]
