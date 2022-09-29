@@ -145,9 +145,9 @@ fn modinv_test() {
 // }
 #[allow(dead_code)]
 fn modpow<T>(a: T, n: T, modulo: T) -> T
-    where
-        T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
-        <T as BitAnd>::Output: PartialEq + Num,
+where
+    T: Num + NumAssignOps + NumOps + Copy + PartialOrd + BitAnd + PartialEq + ShrAssign,
+    <T as BitAnd>::Output: PartialEq + Num,
 {
     let mut res = one();
     let mut a = a;
@@ -181,6 +181,7 @@ mod comb {
         static ref INV: Mutex<Vec<usize>> = Mutex::default();
         static ref MODULO: Mutex<usize> = Mutex::default();
         // static ref MAXNCONV: Mutex<usize> = Mutex::default();
+
     }
 
     // // テーブルを作る前処理
@@ -701,7 +702,7 @@ fn main() {
     input![a: String];
     //new type
     let mut res = 0;
-    for s in a.chars().into_iter(){
+    for s in a.chars().into_iter() {
         res += s.to_digit(10).unwrap();
     }
     println!("{}", res)
