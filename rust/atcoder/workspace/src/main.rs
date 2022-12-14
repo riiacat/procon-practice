@@ -5,6 +5,7 @@ extern crate num_bigint;
 // 0.2.2
 extern crate num_traits;
 
+use itertools::enumerate;
 // 0.2.8
 use num_bigint::BigInt;
 use num_traits::{one, zero, Num, NumAssignOps, NumOps, One, Pow, ToPrimitive, Zero};
@@ -677,10 +678,11 @@ fn num_to_alphabet(a: usize) -> Option<AsciiChar> {
 // ##########
 // lazy_static!
 // ##########
-// lazy_static! {
-//     static ref H: Mutex<Vec<i32>> = Mutex::default();
-//     static ref W: Mutex<Vec<i32>> = Mutex::default();
-// }
+lazy_static! {
+    static ref D: Mutex<i64> = Mutex::default();
+    static ref C: Mutex<Vec<i64>> = Mutex::default();
+    static ref S: Mutex<Vec<Vec<i64>>> = Mutex::default();
+}
 // let mut values = VALUES.lock().unwrap();
 // values.extend_from_slice(&[1, 2, 3, 4]);
 // assert_eq!(&*values, &[1, 2, 3, 4]);
@@ -696,14 +698,122 @@ const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
+#[derive(Debug)]
+struct State {
+    selected: Vec<usize>,
+    select_day: Vec<Vec<usize>>,
+    score: Option<i64>,
+}
+
+impl State {
+    fn new(days: i32) -> Self {
+        let selected: Vec<usize> = vec![];
+        let mut select_day: Vec<Vec<usize>> = vec![];
+
+        for _ in 0..26 {
+            select_day.push(vec![]);
+        }
+
+        State {
+            selected,
+            select_day,
+            score: Option::None,
+        }
+    }
+
+    fn calc_score(&mut self) -> i64 {
+        let d = *D.lock().unwrap();
+        let c = C.lock().unwrap();
+        let s = S.lock().unwrap();
+
+        let mut res: i64 = 0;
+        for (i_day, sel_con) in enumerate(self.selected.iter()) {
+            let a = s[i_day][*sel_con];
+            // eprintln!("day: {}, sel_con: {}, a: {}", i_day, sel_con, a);
+            res += a;
+        }
+
+        for con in 0..26 {
+            let select_days = &self.select_day[con];
+            for i in 0..(select_days.len()) {
+                let old_day = if i == 0 { 0 } else { select_days[i - 1] };
+                let interval = select_days[i] - old_day;
+                if interval > 1 {
+                    res -= c[con] * (interval - 1) as i64 * ((interval) as i64) / 2;
+                }
+            }
+
+            let old_day = if (select_days.len() > 0) {
+                select_days[select_days.len() - 1]
+            } else {
+                0
+            };
+            let interval = d + 1 - old_day as i64;
+            if interval > 1 {
+                res -= c[con] * (interval - 1) as i64 * ((interval) as i64) / 2;
+            }
+        }
+
+        eprintln!("score: {}", res);
+        self.score = Some(res);
+
+        return res;
+    }
+
+    fn print_out(&self) {
+        for d in self.selected.iter() {
+            println!("{}", d + 1);
+        }
+    }
+
+    fn get_score(&self) -> i64 {
+        self.score.unwrap()
+    }
+}
+
+#[cfg(test)]
+mod state_tests {
+    // use super::*;
+
+    // #[test]
+    // fn score_test{
+
+    // }
+}
+
 // ABC081A
 // #[fastout]
 fn main() {
-    input![a: String];
     //new type
     let mut res = 0;
-    for s in a.chars().into_iter() {
-        res += s.to_digit(10).unwrap();
+
+    input! {
+        d: i64,
+        c:[i64; 26],
+        s: [[i64; 26]; d],
+    };
+
+    eprintln!("{:?}", d);
+    eprintln!("{:?}", c);
+    eprintln!("{:?}", s);
+    eprintln!("{}", res);
+
+    {
+        let mut DD = D.lock().unwrap();
+        *DD = d;
+        let mut CC = C.lock().unwrap();
+        *CC = c;
+        let mut SS = S.lock().unwrap();
+        *SS = s;
     }
-    println!("{}", res)
+
+    let mut test_state = State::new(d as i32);
+    for (i_d, a) in enumerate([1, 17, 13, 14, 13]) {
+        test_state.selected.push(a - 1);
+        test_state.select_day[a - 1].push(i_d + 1);
+    }
+
+    eprintln!("state:\n{:?}", test_state);
+    let score = test_state.calc_score();
+    test_state.print_out();
 }
