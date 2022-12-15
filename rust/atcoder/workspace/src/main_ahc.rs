@@ -873,197 +873,33 @@ const MAXN_CONV: usize = 510000;
 
 #[derive(Debug)]
 struct State {
-    selected: Vec<usize>,
-    select_day: Vec<Vec<usize>>,
-    score: Option<i64>,
+    // selected: Vec<usize>,
+// select_day: Vec<Vec<usize>>,
+// score: Option<i64>,
 }
 
 impl State {
-    fn new(days: i32) -> Self {
-        let selected: Vec<usize> = vec![];
-        let mut select_day: Vec<Vec<usize>> = vec![];
-
-        for _ in 0..26 {
-            select_day.push(vec![]);
-        }
-
-        State {
-            selected,
-            select_day,
-            score: Option::None,
-        }
-    }
-
-    fn interval_cost(&self, c: i64, interval: i64) -> i64 {
-        let a = c * (interval - 1) as i64 * ((interval) as i64) / 2;
-        return a;
-    }
+    fn new(days: i32) -> Self {}
 
     fn calc_score(&mut self) -> i64 {
-        let d = *D.lock().unwrap();
-        let c = C.lock().unwrap();
-        let s = S.lock().unwrap();
-
-        let mut res: i64 = 0;
-        for (i_day, sel_con) in enumerate(self.selected.iter()) {
-            let a = s[i_day][*sel_con];
-            // eprintln!("day: {}, sel_con: {}, a: {}", i_day, sel_con, a);
-            res += a;
-        }
-
-        for con in 0..26 {
-            let select_days = &self.select_day[con];
-            for i in 0..(select_days.len()) {
-                let old_day = if i == 0 { 0 } else { select_days[i - 1] };
-                let interval = select_days[i] - old_day;
-                if interval > 1 {
-                    res -= self.interval_cost(c[con], interval as i64);
-                }
-            }
-
-            let old_day = if (select_days.len() > 0) {
-                select_days[select_days.len() - 1]
-            } else {
-                0
-            };
-            let interval = d + 1 - old_day as i64;
-            res -= self.interval_cost(c[con], interval);
-        }
-
-        // eprintln!("score: {}", res);
-        self.score = Some(res);
-
-        return res;
+        1
     }
 
-    fn print_out(&self) {
-        for d in self.selected.iter() {
-            println!("{}", d + 1);
-        }
-    }
+    fn print_out(&self) {}
 
     fn get_score(&self) -> i64 {
         self.score.unwrap()
     }
 
-    fn make_greedy(&mut self, cost_interval: i64) {
-        let d = *D.lock().unwrap();
-        let c = C.lock().unwrap();
-        let s = S.lock().unwrap();
+    fn make_greedy(&mut self, cost_interval: i64) {}
 
-        // 365 // 26 = 14くらいはコストがあると思う
-        let s_in_c: Vec<Vec<i64>> = s
-            .iter()
-            .map(|s_d| {
-                s_d.iter()
-                    .zip(c.iter())
-                    .map(|(s_con, c_con)| s_con + c_con * cost_interval)
-                    .collect()
-            })
-            .collect();
-
-        let mut selected_con = vec![];
-        let mut selected_days: Vec<Vec<usize>> = (0..26).into_iter().map(|i| vec![]).collect_vec();
-        for (i_d, s_in_c_d) in enumerate(s_in_c.iter()) {
-            let (max_i, _) = s_in_c_d
-                .iter()
-                .enumerate()
-                .max_by(|(_, a), (_, b)| a.cmp(b))
-                .unwrap();
-            selected_con.push(max_i);
-            selected_days[max_i].push(i_d + 1);
-        }
-
-        self.selected = selected_con;
-        self.select_day = selected_days;
-    }
-
-    fn change_and_rescore(&mut self, day: i64, new_con: usize) -> i64 {
-        let mut score: i64;
-        {
-            let d = *D.lock().unwrap();
-            let c = C.lock().unwrap();
-            let s = S.lock().unwrap();
-
-            score = if self.score.is_none() {
-                // let mut score = if self.score.is_none() {
-                self.calc_score()
-            } else {
-                self.get_score()
-            };
-
-            // eprintln!("{:?}", self);
-
-            let old_con = self.selected[day as usize - 1];
-            if old_con == new_con {
-                return score;
-            }
-            self.selected[day as usize - 1] = new_con as usize;
-
-            let old_con_day_pos = self.select_day[old_con]
-                .iter()
-                .position(|d| *d == (day as usize))
-                .unwrap();
-            let prev = old_con_day_pos as i64 - 1;
-            let prev = if prev < 0 {
-                0
-            } else {
-                self.select_day[old_con][prev as usize]
-            };
-
-            let next = old_con_day_pos + 1;
-            let next = if next >= self.select_day[old_con].len() {
-                d as usize + 1
-            } else {
-                self.select_day[old_con][next as usize]
-            };
-
-            let del_cost = self.interval_cost(c[old_con], next as i64 - prev as i64)
-                - self.interval_cost(c[old_con], next as i64 - day)
-                - self.interval_cost(c[old_con], day - prev as i64);
-            score -= del_cost;
-            score -= s[day as usize - 1][old_con];
-
-            self.select_day[old_con].remove(old_con_day_pos);
-
-            let new_con_day_pos = self.select_day[new_con as usize]
-                .iter()
-                .position(|a| *a > day as usize)
-                .unwrap_or(self.select_day[new_con as usize].len());
-
-            self.select_day[new_con as usize].insert(new_con_day_pos, day as usize);
-            let prev = new_con_day_pos as i64 - 1;
-            let prev = if prev < 0 {
-                0
-            } else {
-                self.select_day[new_con][prev as usize]
-            };
-
-            let next = new_con_day_pos + 1;
-            let next = if next >= self.select_day[new_con].len() {
-                d as usize + 1
-            } else {
-                self.select_day[new_con][next as usize]
-            };
-
-            let del_cost = self.interval_cost(c[new_con], next as i64 - prev as i64)
-                - self.interval_cost(c[new_con], next as i64 - day)
-                - self.interval_cost(c[new_con], day - prev as i64);
-            score += del_cost;
-            score += s[day as usize - 1][new_con];
-        }
-        // eprintln!("asserting");
-        // assert_eq!(self.calc_score(), score);
-        // eprintln!("asserting done");
-
-        self.score = Some(score);
-        return score;
-    }
+    fn change_and_rescore(&mut self, day: i64, new_con: usize) -> i64 {}
 
     fn annealing_update(&mut self) {
         let timer = (*TIMER.lock().unwrap()).unwrap();
         let lim_d = *D.lock().unwrap();
 
+        //TODO 調整
         const T0: f64 = 2e3;
         const T1: f64 = 6e3;
         const TL_S: f64 = 2.0 - 0.05;
@@ -1087,52 +923,26 @@ impl State {
                 eprintln!("i = {}, s={}, T={}, e={}", i, old_score, T, timer.elapsed());
             }
 
-            if rng.gen_bool(0.5) {
-                //random one point change
-                let d: i64 = rng.gen_range(1, lim_d + 1);
-                let con: usize = rng.gen_range(0, 26);
-                let old_con = self.selected[d as usize - 1];
+            // TODO local searchをして、確率で採用する
 
-                let new_score = self.change_and_rescore(d, con);
-                if new_score < old_score
-                    && (!rng.gen_bool(f64::exp((new_score - old_score) as f64 / T)))
-                {
-                    self.change_and_rescore(d, old_con);
-                } else {
-                    // eprintln!(
-                    //     "c: i={}, {}->{} ({}), T={}",
-                    //     i,
-                    //     old_score,
-                    //     new_score,
-                    //     new_score - old_score,
-                    //     T
-                    // );
-                }
+            let new_score = self.change_and_rescore(d_1, con_2);
+            if new_score < old_score
+                && (!rng.gen_bool(f64::exp((new_score - old_score) as f64 / T)))
+            {
+                //UNDO
+                self.change_and_rescore(d_1, con_1);
+                self.change_and_rescore(d_2, con_2);
             } else {
-                //random swap
-                let d_1: i64 = rng.gen_range(1, lim_d + 1);
-                let d_2: i64 = rng.gen_range(d_1, min(d_1 + 7, lim_d + 1));
-                let con_1 = self.selected[d_1 as usize - 1];
-                let con_2 = self.selected[d_2 as usize - 1];
-
-                let new_score = self.change_and_rescore(d_1, con_2);
-                let new_score = self.change_and_rescore(d_2, con_1);
-                if new_score < old_score
-                    && (!rng.gen_bool(f64::exp((new_score - old_score) as f64 / T)))
-                {
-                    self.change_and_rescore(d_1, con_1);
-                    self.change_and_rescore(d_2, con_2);
-                } else {
-                    // eprintln!(
-                    //     "s: i={}, {}->{} ({}), T={}",
-                    //     i,
-                    //     old_score,
-                    //     new_score,
-                    //     new_score - old_score,
-                    //     T
-                    // );
-                }
+                // eprintln!(
+                //     "s: i={}, {}->{} ({}), T={}",
+                //     i,
+                //     old_score,
+                //     new_score,
+                //     new_score - old_score,
+                //     T
+                // );
             }
+
             i += 1;
         }
     }
@@ -1144,45 +954,20 @@ mod state_tests {
 
     #[test]
     fn score_test() {
-        let inp = "5
-        86 90 69 51 2 96 71 47 88 34 45 46 89 34 31 38 97 84 41 80 14 4 50 83 7 82
-        19771 12979 18912 10432 10544 12928 13403 3047 10527 9740 8100 92 2856 14730 1396 15905 6534 4650 11469 3628 8433 2994 10899 16396 18355 11424
-        6674 17707 13855 16407 12232 2886 11908 1705 5000 1537 10440 10711 4917 10770 17272 15364 19277 18094 3929 3705 7169 6159 18683 15410 9092 4570
-        6878 4239 19925 1799 375 9563 3445 5658 19857 11401 6997 6498 19933 3848 2426 2146 19745 16880 17773 18359 3921 14172 16730 11157 5439 256
-        8633 15862 15303 10749 18499 7792 10317 5901 9395 11433 3514 3959 5202 19850 19469 9790 5653 784 18500 10552 17975 16615 7852 197 8471 7452
-        19855 17918 7990 10572 4333 438 9140 9104 12622 4985 12319 4028 19922 12132 16259 17476 2976 547 19195 19830 16285 4806 4471 9457 2864 2192";
+        // let inp = "5
+        // 86 90 69 51 2 96 71 47 88 34 45 46 89 34 31 38 97 84 41 80 14 4 50 83 7 82
+        // 19771 12979 18912 10432 10544 12928 13403 3047 10527 9740 8100 92 2856 14730 1396 15905 6534 4650 11469 3628 8433 2994 10899 16396 18355 11424
+        // 6674 17707 13855 16407 12232 2886 11908 1705 5000 1537 10440 10711 4917 10770 17272 15364 19277 18094 3929 3705 7169 6159 18683 15410 9092 4570
+        // 6878 4239 19925 1799 375 9563 3445 5658 19857 11401 6997 6498 19933 3848 2426 2146 19745 16880 17773 18359 3921 14172 16730 11157 5439 256
+        // 8633 15862 15303 10749 18499 7792 10317 5901 9395 11433 3514 3959 5202 19850 19469 9790 5653 784 18500 10552 17975 16615 7852 197 8471 7452
+        // 19855 17918 7990 10572 4333 438 9140 9104 12622 4985 12319 4028 19922 12132 16259 17476 2976 547 19195 19830 16285 4806 4471 9457 2864 2192";
 
-        input_text!(inp =>
-            (d: i64)
-            (c: [i64])
-            {d; s: [i64]}
-        );
-
-        eprintln!("{:?}", d);
-        eprintln!("{:?}", c);
-        eprintln!("{:?}", s);
-        {
-            let mut DD = D.lock().unwrap();
-            *DD = d;
-            let mut CC = C.lock().unwrap();
-            *CC = c;
-            let mut SS = S.lock().unwrap();
-            *SS = s;
-        }
-
-        let mut s = State::new(5);
-
-        for (i_d, a) in enumerate([1, 17, 13, 14, 13]) {
-            s.selected.push(a - 1);
-            s.select_day[a - 1].push(i_d + 1);
-        }
-
-        assert_eq!(s.calc_score(), 79325);
-
-        let incl_s = s.change_and_rescore(1, 1);
-        // eprintln!("{:?}", s);
-        assert_eq!(incl_s, 72553);
-        assert_eq!(s.calc_score(), 72553);
+        // input_text!(inp =>
+        //     (d: i64) // 1つ(複数の値も可能)
+        //     (k:i64 p:i64) //複数値
+        //     (c: [i64]) //1行分のvec
+        //     {d; s: [i64]} // 複数行
+        // );
     }
 }
 
@@ -1202,40 +987,12 @@ fn main() {
         s: [[i64; 26]; d],
     };
 
-    eprintln!("{:?}", d);
-    eprintln!("{:?}", c);
-    eprintln!("{:?}", s);
-    eprintln!("{}", res);
-
-    {
-        let mut DD = D.lock().unwrap();
-        *DD = d;
-        let mut CC = C.lock().unwrap();
-        *CC = c;
-        let mut SS = S.lock().unwrap();
-        *SS = s;
-    }
-
     // let mut test_state = State::new(d as i32);
     // for (i_d, a) in enumerate([1, 17, 13, 14, 13]) {
     //     test_state.selected.push(a - 1);
     //     test_state.select_day[a - 1].push(i_d + 1);
     // }
 
-    let mut best_state: Option<State> = None;
-    for cost_interval in 0..100 {
-        let mut init_state = State::new(d as i32);
-        init_state.make_greedy(cost_interval);
-        let new_score = init_state.calc_score();
-
-        if let Some(best_state_in) = &best_state {
-            if best_state_in.get_score() <= new_score {
-                best_state = Some(init_state);
-            }
-        } else {
-            best_state = Some(init_state);
-        }
-    }
     let mut best_state = best_state.unwrap();
     eprintln!("state:\n{:?}", best_state);
     let score = best_state.calc_score();
