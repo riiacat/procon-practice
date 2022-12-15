@@ -1065,7 +1065,7 @@ impl State {
         let lim_d = *D.lock().unwrap();
 
         const T0: f64 = 2e3;
-        const T1: f64 = 6e1;
+        const T1: f64 = 6e3;
         const TL_S: f64 = 2.0 - 0.05;
         const LOOP: usize = 1e6 as usize * 5;
 
@@ -1111,7 +1111,7 @@ impl State {
             } else {
                 //random swap
                 let d_1: i64 = rng.gen_range(1, lim_d + 1);
-                let d_2: i64 = rng.gen_range(d_1, min(d_1 + 20, lim_d + 1));
+                let d_2: i64 = rng.gen_range(d_1, min(d_1 + 7, lim_d + 1));
                 let con_1 = self.selected[d_1 as usize - 1];
                 let con_2 = self.selected[d_2 as usize - 1];
 
