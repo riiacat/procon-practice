@@ -20,7 +20,9 @@ use itertools::{assert_equal, concat};
 use lazy_static::lazy_static;
 // use libm::*;
 use ascii::AsciiChar;
+use core::time;
 use rand::Rng;
+use std::borrow::Borrow;
 use std::cmp::*;
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 use std::io::*;
@@ -826,13 +828,34 @@ pub mod parse_text {
 }
 
 // ##########
+// Timer
+// ##########
+use std::time::Instant;
+
+#[derive(Clone, Copy, Debug)]
+struct Timer(Instant);
+
+impl Timer {
+    fn new() -> Timer {
+        Timer(Instant::now())
+    }
+
+    fn elapsed(&self) -> f64 {
+        let elapsed = self.0.elapsed();
+        (elapsed.as_secs() as f64) + (elapsed.subsec_nanos() as f64) / 1_000_000_000.0
+    }
+}
+
+// ##########
 // lazy_static!
 // ##########
 lazy_static! {
     static ref D: Mutex<i64> = Mutex::default();
     static ref C: Mutex<Vec<i64>> = Mutex::default();
     static ref S: Mutex<Vec<Vec<i64>>> = Mutex::default();
+    static ref TIMER: Mutex<Option<Timer>> = Mutex::default();
 }
+
 // let mut values = VALUES.lock().unwrap();
 // values.extend_from_slice(&[1, 2, 3, 4]);
 // assert_eq!(&*values, &[1, 2, 3, 4]);
@@ -1038,26 +1061,30 @@ impl State {
     }
 
     fn annealing_update(&mut self) {
+        let timer = (*TIMER.lock().unwrap()).unwrap();
         let lim_d = *D.lock().unwrap();
 
         const T0: f64 = 2e3;
         const T1: f64 = 6e1;
-        const TL: f64 = 1e9;
+        const TL_S: f64 = 2.0 - 0.05;
         const LOOP: usize = 1e6 as usize * 5;
 
         let mut rng = rand_pcg::Pcg64Mcg::new(890482);
         let mut T = 0 as f64;
-        for i in 0..LOOP {
+        let mut i = 0;
+        loop {
             // let old_score = self.calc_score();
             let old_score = self.get_score();
-
+            if timer.elapsed() >= TL_S {
+                break;
+            }
             if i % 100 == 0 {
-                let t = i as f64 / (LOOP as f64);
+                let t = timer.elapsed() / TL_S;
                 T = T0.powf(1.0 - t) * T1.powf(t);
             }
 
-            if i % (LOOP / 100) == 0 {
-                eprintln!("i = {}, s={}, T={},", i, old_score, T);
+            if i % 100000 == 0 {
+                eprintln!("i = {}, s={}, T={}, e={}", i, old_score, T, timer.elapsed());
             }
 
             if rng.gen_bool(0.5) {
@@ -1106,6 +1133,7 @@ impl State {
                     // );
                 }
             }
+            i += 1;
         }
     }
 }
@@ -1161,6 +1189,10 @@ mod state_tests {
 // ABC081A
 // #[fastout]
 fn main() {
+    {
+        *TIMER.lock().unwrap() = Some(Timer::new());
+    }
+
     //new type
     let mut res = 0;
 
