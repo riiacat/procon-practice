@@ -888,7 +888,9 @@ impl Rect {
 
     //TODO test
     fn lap(&self, r2: &Rect) -> bool {
-        self.x1 < r2.x2 && self.x2 > r2.x1 && self.y1 < r2.y2 && self.y2 > r2.y1
+        // self.x1 < r2.x2 && self.x2 > r2.x1 && self.y1 < r2.y2 && self.y2 > r2.y1
+        let r1 = self;
+        r1.x2.min(r2.x2) > r1.x1.max(r2.x1) && r1.y2.min(r2.y2) > r1.y1.max(r2.y1)
     }
 
     fn area(&self) -> i64 {
@@ -1024,7 +1026,7 @@ impl State {
             let rect = &self.ads[target];
             let new_rect = rect.make_change((0, 1, 0, 1));
 
-            if self.check_new_rect(rect, target) {
+            if self.check_new_rect(&new_rect, target) {
                 continue;
             }
 
