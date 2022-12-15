@@ -870,6 +870,11 @@ impl State {
         }
     }
 
+    fn interval_cost(&self, c: i64, interval: i64) -> i64 {
+        let a = c * (interval - 1) as i64 * ((interval) as i64) / 2;
+        return a;
+    }
+
     fn calc_score(&mut self) -> i64 {
         let d = *D.lock().unwrap();
         let c = C.lock().unwrap();
@@ -888,7 +893,7 @@ impl State {
                 let old_day = if i == 0 { 0 } else { select_days[i - 1] };
                 let interval = select_days[i] - old_day;
                 if interval > 1 {
-                    res -= c[con] * (interval - 1) as i64 * ((interval) as i64) / 2;
+                    res -= self.interval_cost(c[con], interval as i64);
                 }
             }
 
@@ -898,9 +903,7 @@ impl State {
                 0
             };
             let interval = d + 1 - old_day as i64;
-            if interval > 1 {
-                res -= c[con] * (interval - 1) as i64 * ((interval) as i64) / 2;
-            }
+            res -= self.interval_cost(c[con], interval);
         }
 
         eprintln!("score: {}", res);
@@ -950,6 +953,78 @@ impl State {
         self.selected = selected_con;
         self.select_day = selected_days;
     }
+
+    fn change_and_rescore(&mut self, day: i64, new_con: usize) {
+        let d = *D.lock().unwrap();
+        let c = C.lock().unwrap();
+        let s = S.lock().unwrap();
+
+        let mut score = if self.score.is_none() {
+            self.calc_score()
+        } else {
+            self.get_score()
+        };
+
+        eprint!("{:?}", self);
+
+        let old_con = self.selected[day as usize - 1];
+        if old_con == new_con {
+            return;
+        }
+        self.selected[day as usize - 1] = new_con as usize;
+
+        let old_con_day_pos = self.select_day[old_con]
+            .iter()
+            .position(|d| *d == (day as usize))
+            .unwrap();
+        let prev = old_con_day_pos as i64 - 1;
+        let prev = if prev < 0 {
+            0
+        } else {
+            self.select_day[old_con][prev as usize]
+        };
+
+        let next = old_con_day_pos + 1;
+        let next = if next >= self.select_day[old_con].len() {
+            d as usize + 1
+        } else {
+            self.select_day[old_con][next as usize]
+        };
+
+        let del_cost = self.interval_cost(c[old_con], next as i64 - prev as i64)
+            - self.interval_cost(c[old_con], next as i64 - day)
+            - self.interval_cost(c[old_con], day - prev as i64);
+        score -= del_cost;
+        score -= s[day as usize - 1][old_con];
+
+        self.select_day[old_con].remove(old_con_day_pos);
+
+        let new_con_day_pos = self.select_day[new_con as usize]
+            .iter()
+            .position(|a| *a > day as usize)
+            .unwrap_or(self.select_day[new_con as usize].len());
+
+        self.select_day[new_con as usize].insert(new_con_day_pos, day as usize);
+        let prev = new_con_day_pos as i64 - 1;
+        let prev = if prev < 0 {
+            0
+        } else {
+            self.select_day[new_con][prev as usize]
+        };
+
+        let next = new_con_day_pos + 1;
+        let next = if next >= self.select_day[new_con].len() {
+            d as usize + 1
+        } else {
+            self.select_day[new_con][next as usize]
+        };
+
+        let del_cost = self.interval_cost(c[old_con], next as i64 - prev as i64)
+            - self.interval_cost(c[old_con], next as i64 - day)
+            - self.interval_cost(c[old_con], day - prev as i64);
+        score -= del_cost;
+        score += s[day as usize - 1][new_con];
+    }
 }
 
 #[cfg(test)]
@@ -972,6 +1047,9 @@ mod state_tests {
             {d; s: [i64]}
         );
 
+        eprintln!("{:?}", d);
+        eprintln!("{:?}", c);
+        eprintln!("{:?}", s);
         {
             let mut DD = D.lock().unwrap();
             *DD = d;
@@ -989,6 +1067,9 @@ mod state_tests {
         }
 
         assert_eq!(s.calc_score(), 79325);
+
+        s.change_and_rescore(1, 1);
+        assert_eq!(s.calc_score(), 72553);
     }
 }
 
