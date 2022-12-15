@@ -293,6 +293,7 @@ dependencies = [
  "petgraph",
  "proconio",
  "rand",
+ "rand_pcg",
  "superslice",
 ]
 

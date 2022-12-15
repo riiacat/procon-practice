@@ -963,6 +963,7 @@ impl State {
             let s = S.lock().unwrap();
 
             score = if self.score.is_none() {
+                // let mut score = if self.score.is_none() {
                 self.calc_score()
             } else {
                 self.get_score()
@@ -1022,15 +1023,15 @@ impl State {
                 self.select_day[new_con][next as usize]
             };
 
-            let del_cost = self.interval_cost(c[old_con], next as i64 - prev as i64)
-                - self.interval_cost(c[old_con], next as i64 - day)
-                - self.interval_cost(c[old_con], day - prev as i64);
-            score -= del_cost;
+            let del_cost = self.interval_cost(c[new_con], next as i64 - prev as i64)
+                - self.interval_cost(c[new_con], next as i64 - day)
+                - self.interval_cost(c[new_con], day - prev as i64);
+            score += del_cost;
             score += s[day as usize - 1][new_con];
         }
-        eprintln!("asserting");
-        assert_eq!(self.calc_score(), score);
-        eprintln!("asserting done");
+        // eprintln!("asserting");
+        // assert_eq!(self.calc_score(), score);
+        // eprintln!("asserting done");
 
         self.score = Some(score);
         return score;
@@ -1040,18 +1041,23 @@ impl State {
         let lim_d = *D.lock().unwrap();
 
         const T0: f64 = 2e3;
-        const T1: f64 = 6e3;
+        const T1: f64 = 6e1;
         const TL: f64 = 1e9;
-        const LOOP: usize = 1e6 as usize;
+        const LOOP: usize = 1e6 as usize * 5;
 
         let mut rng = rand_pcg::Pcg64Mcg::new(890482);
         let mut T = 0 as f64;
         for i in 0..LOOP {
-            let old_score = self.calc_score();
+            // let old_score = self.calc_score();
+            let old_score = self.get_score();
 
             if i % 100 == 0 {
                 let t = i as f64 / (LOOP as f64);
                 T = T0.powf(1.0 - t) * T1.powf(t);
+            }
+
+            if i % (LOOP / 100) == 0 {
+                eprintln!("i = {}, s={}, T={},", i, old_score, T);
             }
 
             if rng.gen_bool(0.5) {
@@ -1061,18 +1067,19 @@ impl State {
                 let old_con = self.selected[d as usize - 1];
 
                 let new_score = self.change_and_rescore(d, con);
-                if new_score <= old_score
+                if new_score < old_score
                     && (!rng.gen_bool(f64::exp((new_score - old_score) as f64 / T)))
                 {
                     self.change_and_rescore(d, old_con);
                 } else {
-                    eprintln!(
-                        "c: i={}, {}->{} ({})",
-                        i,
-                        old_score,
-                        new_score,
-                        new_score - old_score
-                    );
+                    // eprintln!(
+                    //     "c: i={}, {}->{} ({}), T={}",
+                    //     i,
+                    //     old_score,
+                    //     new_score,
+                    //     new_score - old_score,
+                    //     T
+                    // );
                 }
             } else {
                 //random swap
@@ -1083,19 +1090,20 @@ impl State {
 
                 let new_score = self.change_and_rescore(d_1, con_2);
                 let new_score = self.change_and_rescore(d_2, con_1);
-                if new_score <= old_score
+                if new_score < old_score
                     && (!rng.gen_bool(f64::exp((new_score - old_score) as f64 / T)))
                 {
                     self.change_and_rescore(d_1, con_1);
                     self.change_and_rescore(d_2, con_2);
                 } else {
-                    eprintln!(
-                        "s: i={}, {}->{} ({})",
-                        i,
-                        old_score,
-                        new_score,
-                        new_score - old_score
-                    );
+                    // eprintln!(
+                    //     "s: i={}, {}->{} ({}), T={}",
+                    //     i,
+                    //     old_score,
+                    //     new_score,
+                    //     new_score - old_score,
+                    //     T
+                    // );
                 }
             }
         }
@@ -1143,7 +1151,9 @@ mod state_tests {
 
         assert_eq!(s.calc_score(), 79325);
 
-        s.change_and_rescore(1, 1);
+        let incl_s = s.change_and_rescore(1, 1);
+        // eprintln!("{:?}", s);
+        assert_eq!(incl_s, 72553);
         assert_eq!(s.calc_score(), 72553);
     }
 }

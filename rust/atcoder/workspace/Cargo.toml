@@ -45,7 +45,7 @@ rand = { version = "=0.7.3", features = ["small_rng"] }
 #rand_chacha = "=0.2.2"
 #rand_core = "=0.5.1"
 #rand_hc = "=0.2.0"
-#rand_pcg = "=0.2.1"
+rand_pcg = "=0.2.1"
 
 # 乱数の分布の追加
 #rand_distr = "=0.2.2"
