@@ -20,6 +20,7 @@ use itertools::{assert_equal, concat};
 use lazy_static::lazy_static;
 // use libm::*;
 use ascii::AsciiChar;
+use rand::Rng;
 use std::cmp::*;
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 use std::io::*;
@@ -906,7 +907,7 @@ impl State {
             res -= self.interval_cost(c[con], interval);
         }
 
-        eprintln!("score: {}", res);
+        // eprintln!("score: {}", res);
         self.score = Some(res);
 
         return res;
@@ -954,76 +955,150 @@ impl State {
         self.select_day = selected_days;
     }
 
-    fn change_and_rescore(&mut self, day: i64, new_con: usize) {
-        let d = *D.lock().unwrap();
-        let c = C.lock().unwrap();
-        let s = S.lock().unwrap();
+    fn change_and_rescore(&mut self, day: i64, new_con: usize) -> i64 {
+        let mut score: i64;
+        {
+            let d = *D.lock().unwrap();
+            let c = C.lock().unwrap();
+            let s = S.lock().unwrap();
 
-        let mut score = if self.score.is_none() {
-            self.calc_score()
-        } else {
-            self.get_score()
-        };
+            score = if self.score.is_none() {
+                self.calc_score()
+            } else {
+                self.get_score()
+            };
 
-        eprint!("{:?}", self);
+            // eprintln!("{:?}", self);
 
-        let old_con = self.selected[day as usize - 1];
-        if old_con == new_con {
-            return;
+            let old_con = self.selected[day as usize - 1];
+            if old_con == new_con {
+                return score;
+            }
+            self.selected[day as usize - 1] = new_con as usize;
+
+            let old_con_day_pos = self.select_day[old_con]
+                .iter()
+                .position(|d| *d == (day as usize))
+                .unwrap();
+            let prev = old_con_day_pos as i64 - 1;
+            let prev = if prev < 0 {
+                0
+            } else {
+                self.select_day[old_con][prev as usize]
+            };
+
+            let next = old_con_day_pos + 1;
+            let next = if next >= self.select_day[old_con].len() {
+                d as usize + 1
+            } else {
+                self.select_day[old_con][next as usize]
+            };
+
+            let del_cost = self.interval_cost(c[old_con], next as i64 - prev as i64)
+                - self.interval_cost(c[old_con], next as i64 - day)
+                - self.interval_cost(c[old_con], day - prev as i64);
+            score -= del_cost;
+            score -= s[day as usize - 1][old_con];
+
+            self.select_day[old_con].remove(old_con_day_pos);
+
+            let new_con_day_pos = self.select_day[new_con as usize]
+                .iter()
+                .position(|a| *a > day as usize)
+                .unwrap_or(self.select_day[new_con as usize].len());
+
+            self.select_day[new_con as usize].insert(new_con_day_pos, day as usize);
+            let prev = new_con_day_pos as i64 - 1;
+            let prev = if prev < 0 {
+                0
+            } else {
+                self.select_day[new_con][prev as usize]
+            };
+
+            let next = new_con_day_pos + 1;
+            let next = if next >= self.select_day[new_con].len() {
+                d as usize + 1
+            } else {
+                self.select_day[new_con][next as usize]
+            };
+
+            let del_cost = self.interval_cost(c[old_con], next as i64 - prev as i64)
+                - self.interval_cost(c[old_con], next as i64 - day)
+                - self.interval_cost(c[old_con], day - prev as i64);
+            score -= del_cost;
+            score += s[day as usize - 1][new_con];
         }
-        self.selected[day as usize - 1] = new_con as usize;
+        eprintln!("asserting");
+        assert_eq!(self.calc_score(), score);
+        eprintln!("asserting done");
 
-        let old_con_day_pos = self.select_day[old_con]
-            .iter()
-            .position(|d| *d == (day as usize))
-            .unwrap();
-        let prev = old_con_day_pos as i64 - 1;
-        let prev = if prev < 0 {
-            0
-        } else {
-            self.select_day[old_con][prev as usize]
-        };
+        self.score = Some(score);
+        return score;
+    }
 
-        let next = old_con_day_pos + 1;
-        let next = if next >= self.select_day[old_con].len() {
-            d as usize + 1
-        } else {
-            self.select_day[old_con][next as usize]
-        };
+    fn annealing_update(&mut self) {
+        let lim_d = *D.lock().unwrap();
 
-        let del_cost = self.interval_cost(c[old_con], next as i64 - prev as i64)
-            - self.interval_cost(c[old_con], next as i64 - day)
-            - self.interval_cost(c[old_con], day - prev as i64);
-        score -= del_cost;
-        score -= s[day as usize - 1][old_con];
+        const T0: f64 = 2e3;
+        const T1: f64 = 6e3;
+        const TL: f64 = 1e9;
+        const LOOP: usize = 1e6 as usize;
 
-        self.select_day[old_con].remove(old_con_day_pos);
+        let mut rng = rand_pcg::Pcg64Mcg::new(890482);
+        let mut T = 0 as f64;
+        for i in 0..LOOP {
+            let old_score = self.calc_score();
 
-        let new_con_day_pos = self.select_day[new_con as usize]
-            .iter()
-            .position(|a| *a > day as usize)
-            .unwrap_or(self.select_day[new_con as usize].len());
+            if i % 100 == 0 {
+                let t = i as f64 / (LOOP as f64);
+                T = T0.powf(1.0 - t) * T1.powf(t);
+            }
 
-        self.select_day[new_con as usize].insert(new_con_day_pos, day as usize);
-        let prev = new_con_day_pos as i64 - 1;
-        let prev = if prev < 0 {
-            0
-        } else {
-            self.select_day[new_con][prev as usize]
-        };
+            if rng.gen_bool(0.5) {
+                //random one point change
+                let d: i64 = rng.gen_range(1, lim_d + 1);
+                let con: usize = rng.gen_range(0, 26);
+                let old_con = self.selected[d as usize - 1];
 
-        let next = new_con_day_pos + 1;
-        let next = if next >= self.select_day[new_con].len() {
-            d as usize + 1
-        } else {
-            self.select_day[new_con][next as usize]
-        };
+                let new_score = self.change_and_rescore(d, con);
+                if new_score <= old_score
+                    && (!rng.gen_bool(f64::exp((new_score - old_score) as f64 / T)))
+                {
+                    self.change_and_rescore(d, old_con);
+                } else {
+                    eprintln!(
+                        "c: i={}, {}->{} ({})",
+                        i,
+                        old_score,
+                        new_score,
+                        new_score - old_score
+                    );
+                }
+            } else {
+                //random swap
+                let d_1: i64 = rng.gen_range(1, lim_d + 1);
+                let d_2: i64 = rng.gen_range(d_1, min(d_1 + 20, lim_d + 1));
+                let con_1 = self.selected[d_1 as usize - 1];
+                let con_2 = self.selected[d_2 as usize - 1];
 
-        let del_cost = self.interval_cost(c[old_con], next as i64 - prev as i64)
-            - self.interval_cost(c[old_con], next as i64 - day)
-            - self.interval_cost(c[old_con], day - prev as i64);
-        score -= del_cost;
-        score += s[day as usize - 1][new_con];
+                let new_score = self.change_and_rescore(d_1, con_2);
+                let new_score = self.change_and_rescore(d_2, con_1);
+                if new_score <= old_score
+                    && (!rng.gen_bool(f64::exp((new_score - old_score) as f64 / T)))
+                {
+                    self.change_and_rescore(d_1, con_1);
+                    self.change_and_rescore(d_2, con_2);
+                } else {
+                    eprintln!(
+                        "s: i={}, {}->{} ({})",
+                        i,
+                        old_score,
+                        new_score,
+                        new_score - old_score
+                    );
+                }
+            }
+        }
     }
 }
 
@@ -1123,6 +1198,10 @@ fn main() {
     eprintln!("state:\n{:?}", best_state);
     let score = best_state.calc_score();
     // assert_eq!(score, 79325);
+    eprintln!("score_before: {}", score);
+    best_state.annealing_update();
+    eprintln!("score_after: {}", best_state.calc_score());
+
     best_state.print_out();
 }
 
