@@ -6,6 +6,7 @@ extern crate num_bigint;
 extern crate num_traits;
 
 use itertools::enumerate;
+use itertools::Itertools;
 // 0.2.8
 use num_bigint::BigInt;
 use num_traits::{one, zero, Num, NumAssignOps, NumOps, One, Pow, ToPrimitive, Zero};
@@ -675,6 +676,154 @@ fn num_to_alphabet(a: usize) -> Option<AsciiChar> {
     return a.flatten();
 }
 
+// parse_text
+#[macro_use]
+pub mod parse_text {
+    #[macro_export]
+    macro_rules! input_text {
+  ($s:expr=>$($t:tt)*) => {
+    let mut lines=$s.split("\n");
+    $(
+        line_parse!(lines,$t);
+    )*
+  };
+}
+
+    macro_rules! line_parse {
+  ($lines:expr,($($name:ident:$t:tt)*)) => {
+    let mut line=$lines.next().unwrap().split_whitespace();
+    $(value_def!(line,$name,$t);)*
+  };
+
+  //複数行
+  ($lines:expr,{$n:expr;$name:ident:$t:tt}) => {
+    values_def!($lines,$n,$name,$t);
+  };
+}
+
+    macro_rules! value_def {
+        ($line:expr, $name:ident, $t:tt) => {
+            let $name = value!($line, $t);
+        };
+    }
+
+    macro_rules! values_def {
+        ($lines:expr, $n:expr, $name:ident, $t:tt) => {
+            let $name = {
+                let mut vec = Vec::new();
+                for i in 0..$n {
+                    let mut next = $lines.next().unwrap().split_whitespace();
+                    vec.push(value!(next, $t));
+                }
+                vec
+            };
+        };
+    }
+
+    macro_rules! value {
+  //配列
+  ($line:expr,[$t:tt]) => {
+    $line.map(|x|{
+      let mut iter=::std::iter::once(x);
+      value!(iter,$t)
+    }).collect::<Vec<_>>()
+  };
+  //タプル
+  ($line:expr,($($t:tt),*)) => {
+    ($(value!($line,$t),)*)
+  };
+  //文字列
+  ($line:expr,#) => {
+    $line.next().unwrap()
+  };
+  //インデックス(-1)
+  ($line:expr,@) => {
+    $line.next().unwrap().parse::<usize>().unwrap()-1
+  };
+  //単一値
+  ($line:expr,$t:ty) => {
+    $line.next().unwrap().parse::<$t>().unwrap()
+  };
+}
+
+    #[test]
+    fn test1() {
+        {
+            input_text!(
+              "3
+5 2
+2 3 4 5 6
+10
+20
+30
+1 2
+8 1
+2 3
+4 1
+1283 23 43 32
+1 2 3
+2 3 4
+3 4 5
+"=>
+              (n:usize) //単一値
+              (k:i64 p:i64) //複数値
+              (list1:[i64]) //配列
+              {n;list2:i64} //N回繰り返し
+              (tup:(i64,i64)) //タプル
+              {n;list3:(i64,i64)}
+              (i:i64 list4:[i64])
+              {n;map:[i64]}
+            );
+            assert_eq!(n, 3);
+            assert_eq!(k, 5);
+            assert_eq!(p, 2);
+            assert_eq!(list1, vec![2, 3, 4, 5, 6]);
+            assert_eq!(list2, vec![10, 20, 30]);
+            assert_eq!(tup, (1, 2));
+            assert_eq!(list3, vec![(8, 1), (2, 3), (4, 1)]);
+            assert_eq!(i, 1283);
+            assert_eq!(list4, vec![23, 43, 32]);
+            assert_eq!(map, vec![vec![1, 2, 3], vec![2, 3, 4], vec![3, 4, 5]]);
+        }
+
+        {
+            input_text!(
+              "3
+5 2
+2 3 4 5 6
+10
+20
+30
+1 2
+8 1
+2 3
+4 1
+1283 23 43 32
+1 2
+"=>
+              (n:usize) //単一値
+              (k:# p:#) //複数値
+              (list1:[#]) //配列
+              {n;list2:#} //N回繰り返し
+              (tup:(#,#)) //タプル
+              {n;list3:(#,#)}
+              (i:# list4:[#])
+              (index:[@])
+            );
+            assert_eq!(n, 3);
+            assert_eq!(k, "5");
+            assert_eq!(p, "2");
+            assert_eq!(list1, vec!["2", "3", "4", "5", "6"]);
+            assert_eq!(list2, vec!["10", "20", "30"]);
+            assert_eq!(tup, ("1", "2"));
+            assert_eq!(list3, vec![("8", "1"), ("2", "3"), ("4", "1")]);
+            assert_eq!(i, "1283");
+            assert_eq!(list4, vec!["23", "43", "32"]);
+            assert_eq!(index, vec![0, 1]);
+        }
+    }
+}
+
 // ##########
 // lazy_static!
 // ##########
@@ -769,16 +918,78 @@ impl State {
     fn get_score(&self) -> i64 {
         self.score.unwrap()
     }
+
+    fn make_greedy(&mut self, cost_interval: i64) {
+        let d = *D.lock().unwrap();
+        let c = C.lock().unwrap();
+        let s = S.lock().unwrap();
+
+        // 365 // 26 = 14くらいはコストがあると思う
+        let s_in_c: Vec<Vec<i64>> = s
+            .iter()
+            .map(|s_d| {
+                s_d.iter()
+                    .zip(c.iter())
+                    .map(|(s_con, c_con)| s_con + c_con * cost_interval)
+                    .collect()
+            })
+            .collect();
+
+        let mut selected_con = vec![];
+        let mut selected_days: Vec<Vec<usize>> = (0..26).into_iter().map(|i| vec![]).collect_vec();
+        for (i_d, s_in_c_d) in enumerate(s_in_c.iter()) {
+            let (max_i, _) = s_in_c_d
+                .iter()
+                .enumerate()
+                .max_by(|(_, a), (_, b)| a.cmp(b))
+                .unwrap();
+            selected_con.push(max_i);
+            selected_days[max_i].push(i_d + 1);
+        }
+
+        self.selected = selected_con;
+        self.select_day = selected_days;
+    }
 }
 
 #[cfg(test)]
 mod state_tests {
-    // use super::*;
+    use super::*;
 
-    // #[test]
-    // fn score_test{
+    #[test]
+    fn score_test() {
+        let inp = "5
+        86 90 69 51 2 96 71 47 88 34 45 46 89 34 31 38 97 84 41 80 14 4 50 83 7 82
+        19771 12979 18912 10432 10544 12928 13403 3047 10527 9740 8100 92 2856 14730 1396 15905 6534 4650 11469 3628 8433 2994 10899 16396 18355 11424
+        6674 17707 13855 16407 12232 2886 11908 1705 5000 1537 10440 10711 4917 10770 17272 15364 19277 18094 3929 3705 7169 6159 18683 15410 9092 4570
+        6878 4239 19925 1799 375 9563 3445 5658 19857 11401 6997 6498 19933 3848 2426 2146 19745 16880 17773 18359 3921 14172 16730 11157 5439 256
+        8633 15862 15303 10749 18499 7792 10317 5901 9395 11433 3514 3959 5202 19850 19469 9790 5653 784 18500 10552 17975 16615 7852 197 8471 7452
+        19855 17918 7990 10572 4333 438 9140 9104 12622 4985 12319 4028 19922 12132 16259 17476 2976 547 19195 19830 16285 4806 4471 9457 2864 2192";
 
-    // }
+        input_text!(inp =>
+            (d: i64)
+            (c: [i64])
+            {d; s: [i64]}
+        );
+
+        {
+            let mut DD = D.lock().unwrap();
+            *DD = d;
+            let mut CC = C.lock().unwrap();
+            *CC = c;
+            let mut SS = S.lock().unwrap();
+            *SS = s;
+        }
+
+        let mut s = State::new(5);
+
+        for (i_d, a) in enumerate([1, 17, 13, 14, 13]) {
+            s.selected.push(a - 1);
+            s.select_day[a - 1].push(i_d + 1);
+        }
+
+        assert_eq!(s.calc_score(), 79325);
+    }
 }
 
 // ABC081A
@@ -807,13 +1018,37 @@ fn main() {
         *SS = s;
     }
 
-    let mut test_state = State::new(d as i32);
-    for (i_d, a) in enumerate([1, 17, 13, 14, 13]) {
-        test_state.selected.push(a - 1);
-        test_state.select_day[a - 1].push(i_d + 1);
-    }
+    // let mut test_state = State::new(d as i32);
+    // for (i_d, a) in enumerate([1, 17, 13, 14, 13]) {
+    //     test_state.selected.push(a - 1);
+    //     test_state.select_day[a - 1].push(i_d + 1);
+    // }
 
-    eprintln!("state:\n{:?}", test_state);
-    let score = test_state.calc_score();
-    test_state.print_out();
+    let mut best_state: Option<State> = None;
+    for cost_interval in 0..100 {
+        let mut init_state = State::new(d as i32);
+        init_state.make_greedy(cost_interval);
+        let new_score = init_state.calc_score();
+
+        if let Some(best_state_in) = &best_state {
+            if best_state_in.get_score() <= new_score {
+                best_state = Some(init_state);
+            }
+        } else {
+            best_state = Some(init_state);
+        }
+    }
+    let mut best_state = best_state.unwrap();
+    eprintln!("state:\n{:?}", best_state);
+    let score = best_state.calc_score();
+    // assert_eq!(score, 79325);
+    best_state.print_out();
 }
+
+// #[cfg(test)]
+// mod tests{
+//     use super::*;
+
+//     [test]
+
+// }
