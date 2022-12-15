@@ -850,9 +850,8 @@ impl Timer {
 // lazy_static!
 // ##########
 lazy_static! {
-    static ref D: Mutex<i64> = Mutex::default();
-    static ref C: Mutex<Vec<i64>> = Mutex::default();
-    static ref S: Mutex<Vec<Vec<i64>>> = Mutex::default();
+    static ref N: Mutex<i64> = Mutex::default();
+    static ref XYR: Mutex<Vec<(i64, i64, i64)>> = Mutex::default();
     static ref TIMER: Mutex<Option<Timer>> = Mutex::default();
 }
 
@@ -871,43 +870,140 @@ const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
+#[derive(Debug, Clone)]
+struct Rect {
+    x1: i64,
+    x2: i64,
+    y1: i64,
+    y2: i64,
+}
+
+impl Rect {
+    fn new(x1: i64, x2: i64, y1: i64, y2: i64) -> Self {
+        assert!(x1 < x2);
+        assert!(y1 < y2);
+
+        Rect { x1, x2, y1, y2 }
+    }
+
+    //TODO test
+    fn lap(&self, r2: &Rect) -> bool {
+        self.x1 < r2.x2 && self.x2 > r2.x1 && self.y1 < r2.y2 && self.y2 > r2.y1
+    }
+
+    fn area(&self) -> i64 {
+        (self.x2 - self.x1) * (self.y2 - self.y1)
+    }
+
+    fn make_change(&self, delta: (i64, i64, i64, i64)) -> Self {
+        let (mut x1, mut x2, mut y1, mut y2) = (self.x1, self.x2, self.y1, self.y2);
+        x1 += delta.0;
+        x2 += delta.1;
+        y1 += delta.2;
+        y2 += delta.3;
+
+        chmin!(x1, 10000);
+        chmin!(x2, 10000);
+        chmin!(y1, 10000);
+        chmin!(y2, 10000);
+        chmax!(x1, 0);
+        chmax!(x2, 0);
+        chmax!(y1, 0);
+        chmax!(y2, 0);
+
+        Rect { x1, x2, y1, y2 }
+    }
+}
+
 #[derive(Debug)]
 struct State {
+    ads: Vec<Rect>,
+    score: Option<i64>,
     // selected: Vec<usize>,
-// select_day: Vec<Vec<usize>>,
-// score: Option<i64>,
+    // select_day: Vec<Vec<usize>>,
+    // score: Option<i64>,
 }
 
 impl State {
-    fn new(days: i32) -> Self {}
+    fn new() -> Self {
+        //greedyに作成する
+        let n = N.lock().unwrap();
+        let xyr = XYR.lock().unwrap();
 
-    fn calc_score(&mut self) -> i64 {
-        1
+        let mut rects = vec![];
+        for (x, y, r) in xyr.iter() {
+            rects.push(Rect::new(*x, x + 1, *y, y + 1));
+        }
+
+        State {
+            ads: rects,
+            score: None,
+        }
     }
 
-    fn print_out(&self) {}
+    pub fn p_1rect(rect: &Rect, r: i64) -> f64 {
+        //TODO 作り方によっては0点になることがある
+
+        let a = rect.area();
+        // assert!(a == 1);
+        1.0 - (1.0 - min(r, a) as f64 / max(r, a) as f64).powf(2.0)
+    }
+
+    fn calc_score(&mut self) -> i64 {
+        let n = N.lock().unwrap();
+        let n = (*n as f64);
+        let xyr = XYR.lock().unwrap();
+
+        let mut res: f64 = 0.0;
+        for (rect, (x, y, r)) in self.ads.iter().zip(xyr.iter()) {
+            let p = State::p_1rect(rect, *r);
+            res += 1e9 * p / n;
+        }
+
+        let res: i64 = res.round() as i64;
+        self.score = Some(res);
+        res
+    }
+
+    fn print_out(&self) {
+        for r in self.ads.iter() {
+            println!("{} {} {} {}", r.x1, r.y1, r.x2, r.y2)
+        }
+    }
 
     fn get_score(&self) -> i64 {
         self.score.unwrap()
     }
 
-    fn make_greedy(&mut self, cost_interval: i64) {}
+    fn check_new_rect(&self, rect: &Rect, skip_i: usize) -> bool {
+        self.ads.iter().enumerate().any(|(i, r)| {
+            if skip_i == i {
+                return false;
+            }
+            r.lap(rect)
+        })
+    }
 
-    fn change_and_rescore(&mut self, day: i64, new_con: usize) -> i64 {}
+    // fn make_greedy(&mut self, cost_interval: i64) {}
+
+    // fn change_and_rescore(&mut self, day: i64, new_con: usize) -> i64 {}
 
     fn annealing_update(&mut self) {
+        self.calc_score();
         let timer = (*TIMER.lock().unwrap()).unwrap();
-        let lim_d = *D.lock().unwrap();
+        let n = N.lock().unwrap();
+        let xyr = XYR.lock().unwrap();
 
-        //TODO 調整
+        // //TODO 調整
         const T0: f64 = 2e3;
-        const T1: f64 = 6e3;
-        const TL_S: f64 = 2.0 - 0.05;
-        const LOOP: usize = 1e6 as usize * 5;
+        const T1: f64 = 6e2;
+        const TL_S: f64 = 5.0 - 0.05;
+        // const LOOP: usize = 1e6 as usize * 5;
 
         let mut rng = rand_pcg::Pcg64Mcg::new(890482);
         let mut T = 0 as f64;
         let mut i = 0;
+
         loop {
             // let old_score = self.calc_score();
             let old_score = self.get_score();
@@ -919,20 +1015,32 @@ impl State {
                 T = T0.powf(1.0 - t) * T1.powf(t);
             }
 
-            if i % 100000 == 0 {
+            if i % 1000000 == 0 {
                 eprintln!("i = {}, s={}, T={}, e={}", i, old_score, T, timer.elapsed());
             }
 
-            // TODO local searchをして、確率で採用する
+            //     // TODO local searchをして、確率で採用する
+            let target = rng.gen_range(0, *n) as usize;
+            let rect = &self.ads[target];
+            let new_rect = rect.make_change((0, 1, 0, 1));
 
-            let new_score = self.change_and_rescore(d_1, con_2);
+            if self.check_new_rect(rect, target) {
+                continue;
+            }
+
+            let new_score = (old_score as f64)
+                - State::p_1rect(rect, xyr[target].2) * 1e9 / (*n as f64)
+                + State::p_1rect(&new_rect, xyr[target].2) * 1e9 / (*n as f64);
+            let new_score = new_score.round() as i64;
+
+            //     let new_score = self.change_and_rescore(d_1, con_2);
             if new_score < old_score
                 && (!rng.gen_bool(f64::exp((new_score - old_score) as f64 / T)))
             {
                 //UNDO
-                self.change_and_rescore(d_1, con_1);
-                self.change_and_rescore(d_2, con_2);
             } else {
+                self.ads[target] = new_rect;
+                self.score = Some(new_score);
                 // eprintln!(
                 //     "s: i={}, {}->{} ({}), T={}",
                 //     i,
@@ -944,6 +1052,10 @@ impl State {
             }
 
             i += 1;
+            // if i > 10 {
+            //     break;
+            // };
+            // }
         }
     }
 }
@@ -981,11 +1093,17 @@ fn main() {
     //new type
     let mut res = 0;
 
-    input! {
-        d: i64,
-        c:[i64; 26],
-        s: [[i64; 26]; d],
-    };
+    {
+        input! {
+            n: i64,
+            xyr:[(i64, i64, i64); n],
+        };
+
+        let mut nn = N.lock().unwrap();
+        *nn = n;
+        let mut xyrr = XYR.lock().unwrap();
+        *xyrr = xyr;
+    }
 
     // let mut test_state = State::new(d as i32);
     // for (i_d, a) in enumerate([1, 17, 13, 14, 13]) {
@@ -993,12 +1111,13 @@ fn main() {
     //     test_state.select_day[a - 1].push(i_d + 1);
     // }
 
-    let mut best_state = best_state.unwrap();
+    let mut best_state = State::new();
     eprintln!("state:\n{:?}", best_state);
     let score = best_state.calc_score();
     // assert_eq!(score, 79325);
     eprintln!("score_before: {}", score);
     best_state.annealing_update();
+    eprintln!("state:\n{:?}", best_state);
     eprintln!("score_after: {}", best_state.calc_score());
 
     best_state.print_out();
