@@ -1054,9 +1054,10 @@ impl State {
             let target = rng.gen_range(0, n) as usize;
             let rect = &self.ads[target];
             // let new_rect = rect.make_change((0, 1, 0, 1));
-            let target_r = ((xyr[target].2 as f64) * (1.0 - 0.5 * (1.0 - t.sqrt())))
-                .to_i64()
-                .unwrap();
+            let target_r = ((xyr[target].2 as f64)
+                * (1.0 - 0.5 * if t > 0.98 { 0.0 } else { (1.0 - t.sqrt()) }))
+            .to_i64()
+            .unwrap();
             max_n =
                 (((50.0 as f64).powf(1.0 - t) + 1.0) * target_r.to_f64().unwrap().log10()) as i64;
             // let low = if is_over { 0 } else { -max_n };
@@ -1210,9 +1211,9 @@ fn main() {
             eprint!("i={}", i);
         }
         // if i >= 1 {
-        // if i >= 99 {
-        // break;
-        // }
+        if i >= 99 {
+            break;
+        }
         let entry = match entry {
             Ok(entry) => entry,
             Err(e) => {
