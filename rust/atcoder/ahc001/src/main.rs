@@ -9,6 +9,7 @@ use itertools::enumerate;
 use itertools::Itertools;
 // 0.2.8
 use num_bigint::BigInt;
+use num_integer::Roots;
 use num_traits::{one, zero, Num, NumAssignOps, NumOps, One, Pow, ToPrimitive, Zero};
 
 // use proconio::derive_readable;
@@ -1051,15 +1052,17 @@ impl State {
 
             let target = rng.gen_range(0, n) as usize;
             let rect = &self.ads[target];
-            let is_over = rect.area() >= xyr[target].2;
             // let new_rect = rect.make_change((0, 1, 0, 1));
-            max_n = (50.0 as f64).powf(1.0 - t) as i64;
-            let low = if is_over { 0 } else { -max_n };
+            let target_r = xyr[target].2;
+            max_n =
+                (((50.0 as f64).powf(1.0 - t) + 1.0) * target_r.to_f64().unwrap().log10()) as i64;
+            // let low = if is_over { 0 } else { -max_n };
+            // let low = if is_over -max_n ;
             let new_rect = rect.make_change((
-                rng.gen_range(low, max_n + 1),
-                rng.gen_range(low, max_n + 1),
-                rng.gen_range(low, max_n + 1),
-                rng.gen_range(low, max_n + 1),
+                rng.gen_range(-max_n, max_n + 1),
+                rng.gen_range(-max_n, max_n + 1),
+                rng.gen_range(-max_n, max_n + 1),
+                rng.gen_range(-max_n, max_n + 1),
                 // rng.gen_range(low, max_n / 2 + 1),
                 // rng.gen_range(low / 2, max_n + 1),
                 // rng.gen_range(low, max_n / 2 + 1),
@@ -1099,8 +1102,9 @@ impl State {
                 self.score = Some(new_score);
                 if new_score != old_score {
                     // eprintln!(
-                    //     "s: i={}, maxn={}, {}->{} ({}), T={}",
+                    //     "s: i={}, r={}, maxn={}, {}->{} ({}), T={}",
                     //     i,
+                    //     xyr[target].2,
                     //     max_n,
                     //     old_score,
                     //     new_score,
@@ -1196,12 +1200,10 @@ fn main() {
             sleep(Duration::from_secs(5));
             eprint!("i={}", i);
         }
+        // if i >= 1 {
         if i >= 99 {
             break;
         }
-        // if i >= 1 {
-        //     break;
-        // }
         let entry = match entry {
             Ok(entry) => entry,
             Err(e) => {
@@ -1234,7 +1236,8 @@ fn main() {
                             n: n,
                             xyr: xyr.clone(),
                         });
-                        best_state.annealing_update(i);
+                        // best_state.annealing_update(i);
+                        best_state.annealing_update(890482);
                         let s = best_state.calc_score();
                         (best_state, s)
                     })
