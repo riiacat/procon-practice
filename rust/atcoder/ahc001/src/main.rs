@@ -1035,11 +1035,12 @@ impl State {
             let target = rng.gen_range(0, *n) as usize;
             let rect = &self.ads[target];
             // let new_rect = rect.make_change((0, 1, 0, 1));
+            let max_n = 3;
             let new_rect = rect.make_change((
-                rng.gen_range(-1, 2),
-                rng.gen_range(-1, 2),
-                rng.gen_range(-1, 2),
-                rng.gen_range(-1, 2),
+                rng.gen_range(-max_n, max_n + 1),
+                rng.gen_range(-max_n, max_n + 1),
+                rng.gen_range(-max_n, max_n + 1),
+                rng.gen_range(-max_n, max_n + 1),
             ));
             if new_rect.is_none() {
                 i += 1;
