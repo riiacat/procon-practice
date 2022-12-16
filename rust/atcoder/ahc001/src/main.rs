@@ -1021,7 +1021,7 @@ impl State {
 
         // //TODO 調整
         const T0: f64 = 5e3;
-        const T1: f64 = 6e2;
+        const T1: f64 = 6e1;
         const TL_S: f64 = 5.0 - 0.05;
         // const LOOP: usize = 1e6 as usize * 5;
 
@@ -1044,16 +1044,19 @@ impl State {
                 // eprintln!("i = {}, s={}, T={}, e={}", i, old_score, T, timer.elapsed());
             }
 
-            //     // TODO local searchをして、確率で採用する
             let target = rng.gen_range(0, n) as usize;
             let rect = &self.ads[target];
             // let new_rect = rect.make_change((0, 1, 0, 1));
-            let max_n = 3;
+            let max_n = 10;
             let new_rect = rect.make_change((
                 rng.gen_range(-max_n, max_n + 1),
                 rng.gen_range(-max_n, max_n + 1),
                 rng.gen_range(-max_n, max_n + 1),
                 rng.gen_range(-max_n, max_n + 1),
+                // rng.gen_range(-max_n, max_n / 2 + 1),
+                // rng.gen_range(-max_n / 2, max_n + 1),
+                // rng.gen_range(-max_n, max_n / 2 + 1),
+                // rng.gen_range(-max_n / 2, max_n + 1),
             ));
             if new_rect.is_none() {
                 i += 1;
@@ -1182,6 +1185,9 @@ fn main() {
         if i % 20 == 19 {
             sleep(Duration::from_secs(5));
             eprint!("i={}", i);
+        }
+        if i >= 99 {
+            break;
         }
         let entry = match entry {
             Ok(entry) => entry,
