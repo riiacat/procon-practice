@@ -850,9 +850,9 @@ impl Timer {
 // lazy_static!
 // ##########
 lazy_static! {
-    static ref N: Mutex<i64> = Mutex::default();
-    static ref XYR: Mutex<Vec<(i64, i64, i64)>> = Mutex::default();
-    static ref TIMER: Mutex<Option<Timer>> = Mutex::default();
+    // static ref N: Mutex<i64> = Mutex::default();
+    // static ref XYR: Mutex<Vec<(i64, i64, i64)>> = Mutex::default();
+    // static ref TIMER: Mutex<Option<Timer>> = Mutex::default();
 }
 
 // let mut values = VALUES.lock().unwrap();
@@ -922,29 +922,37 @@ impl Rect {
 }
 
 const EPS: f64 = 1e-9;
-#[derive(Debug)]
+
+#[derive(Debug, Clone)]
+struct CFG {
+    n: i64,
+    xyr: Vec<(i64, i64, i64)>,
+}
+
+#[derive(Debug, Clone)]
 struct State {
     ads: Vec<Rect>,
     score: Option<i64>,
     // selected: Vec<usize>,
     // select_day: Vec<Vec<usize>>,
     // score: Option<i64>,
+    timer: Timer,
+    cfg: CFG,
 }
 
 impl State {
-    fn new() -> Self {
+    fn new(cfg: CFG) -> Self {
         //greedyに作成する
-        let n = N.lock().unwrap();
-        let xyr = XYR.lock().unwrap();
-
         let mut rects = vec![];
-        for (x, y, r) in xyr.iter() {
+        for (x, y, r) in cfg.xyr.iter() {
             rects.push(Rect::new(*x, x + 1, *y, y + 1).unwrap());
         }
 
         State {
             ads: rects,
             score: None,
+            cfg: cfg,
+            timer: Timer::new(),
         }
     }
 
@@ -962,9 +970,8 @@ impl State {
     }
 
     fn calc_score(&mut self) -> i64 {
-        let n = N.lock().unwrap();
-        let n = (*n as f64);
-        let xyr = XYR.lock().unwrap();
+        let n = (self.cfg.n as f64);
+        let xyr = &self.cfg.xyr;
 
         let mut res: f64 = 0.0;
         for (rect, (x, y, r)) in self.ads.iter().zip(xyr.iter()) {
@@ -1002,9 +1009,9 @@ impl State {
 
     fn annealing_update(&mut self) {
         self.calc_score();
-        let timer = (*TIMER.lock().unwrap()).unwrap();
-        let n = N.lock().unwrap();
-        let xyr = XYR.lock().unwrap();
+        let timer = self.timer;
+        let n = self.cfg.n;
+        let xyr = &self.cfg.xyr;
 
         // //TODO 調整
         const T0: f64 = 5e3;
@@ -1032,7 +1039,7 @@ impl State {
             }
 
             //     // TODO local searchをして、確率で採用する
-            let target = rng.gen_range(0, *n) as usize;
+            let target = rng.gen_range(0, n) as usize;
             let rect = &self.ads[target];
             // let new_rect = rect.make_change((0, 1, 0, 1));
             let max_n = 3;
@@ -1062,8 +1069,8 @@ impl State {
 
             let new_score = (old_score as f64)
                 - State::p_1rect(rect, xyr[target].2, xyr[target].0, xyr[target].1) * 1e9
-                    / (*n as f64)
-                + new_rect_score_p * 1e9 / (*n as f64);
+                    / (n as f64)
+                + new_rect_score_p * 1e9 / (n as f64);
             let new_score = new_score.round() as i64;
 
             //     let new_score = self.change_and_rescore(d_1, con_2);
@@ -1119,24 +1126,13 @@ mod state_tests {
 // ABC081A
 // #[fastout]
 fn main() {
-    {
-        *TIMER.lock().unwrap() = Some(Timer::new());
-    }
-
     //new type
     let mut res = 0;
 
-    {
-        input! {
-            n: i64,
-            xyr:[(i64, i64, i64); n],
-        };
-
-        let mut nn = N.lock().unwrap();
-        *nn = n;
-        let mut xyrr = XYR.lock().unwrap();
-        *xyrr = xyr;
-    }
+    input! {
+        n: i64,
+        xyr:[(i64, i64, i64); n],
+    };
 
     // let mut test_state = State::new(d as i32);
     // for (i_d, a) in enumerate([1, 17, 13, 14, 13]) {
@@ -1144,7 +1140,7 @@ fn main() {
     //     test_state.select_day[a - 1].push(i_d + 1);
     // }
 
-    let mut best_state = State::new();
+    let mut best_state = State::new(CFG { n: n, xyr: xyr });
     eprintln!("state:\n{:?}", best_state);
     let score = best_state.calc_score();
     // assert_eq!(score, 79325);
