@@ -10,6 +10,7 @@ use itertools::Itertools;
 // 0.2.8
 use num_bigint::BigInt;
 use num_integer::Roots;
+use num_traits::pow;
 use num_traits::{one, zero, Num, NumAssignOps, NumOps, One, Pow, ToPrimitive, Zero};
 
 // use proconio::derive_readable;
@@ -1053,7 +1054,9 @@ impl State {
             let target = rng.gen_range(0, n) as usize;
             let rect = &self.ads[target];
             // let new_rect = rect.make_change((0, 1, 0, 1));
-            let target_r = xyr[target].2;
+            let target_r = ((xyr[target].2 as f64) * (1.0 - 0.5 * (1.0 - t.sqrt())))
+                .to_i64()
+                .unwrap();
             max_n =
                 (((50.0 as f64).powf(1.0 - t) + 1.0) * target_r.to_f64().unwrap().log10()) as i64;
             // let low = if is_over { 0 } else { -max_n };
@@ -1080,17 +1083,22 @@ impl State {
             }
 
             let new_rect_score_p =
-                State::p_1rect(&new_rect, xyr[target].2, xyr[target].0, xyr[target].1);
+                State::p_1rect(&new_rect, target_r, xyr[target].0, xyr[target].1);
             if new_rect_score_p.abs() < EPS {
                 i += 1;
                 continue;
             }
 
             let new_score = (old_score as f64)
+                - State::p_1rect(rect, target_r, xyr[target].0, xyr[target].1) * 1e9 / (n as f64)
+                + new_rect_score_p * 1e9 / (n as f64);
+            let new_score_true = (old_score as f64)
                 - State::p_1rect(rect, xyr[target].2, xyr[target].0, xyr[target].1) * 1e9
                     / (n as f64)
-                + new_rect_score_p * 1e9 / (n as f64);
+                + State::p_1rect(&new_rect, xyr[target].2, xyr[target].0, xyr[target].1) * 1e9
+                    / (n as f64);
             let new_score = new_score.round() as i64;
+            let new_score_true = new_score_true.round().to_i64().unwrap();
 
             //     let new_score = self.change_and_rescore(d_1, con_2);
             if new_score < old_score
@@ -1099,16 +1107,17 @@ impl State {
                 //UNDO
             } else {
                 self.ads[target] = new_rect;
-                self.score = Some(new_score);
+                self.score = Some(new_score_true);
                 if new_score != old_score {
                     // eprintln!(
-                    //     "s: i={}, r={}, maxn={}, {}->{} ({}), T={}",
+                    //     "s: i={}, r={}, target_r={}, maxn={}, {}->{} ({}), T={}",
                     //     i,
                     //     xyr[target].2,
+                    //     target_r,
                     //     max_n,
                     //     old_score,
-                    //     new_score,
-                    //     new_score - old_score,
+                    //     new_score_true,
+                    //     new_score_true - old_score,
                     //     T
                     // );
                 }
@@ -1201,9 +1210,9 @@ fn main() {
             eprint!("i={}", i);
         }
         // if i >= 1 {
-        if i >= 99 {
-            break;
-        }
+        // if i >= 99 {
+        // break;
+        // }
         let entry = match entry {
             Ok(entry) => entry,
             Err(e) => {
