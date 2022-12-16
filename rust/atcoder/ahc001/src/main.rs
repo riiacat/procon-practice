@@ -1013,30 +1013,35 @@ impl State {
 
     // fn change_and_rescore(&mut self, day: i64, new_con: usize) -> i64 {}
 
-    fn annealing_update(&mut self) {
+    fn annealing_update(&mut self, seed: u128) {
         self.calc_score();
         let timer = self.timer;
         let n = self.cfg.n;
         let xyr = &self.cfg.xyr;
 
         // //TODO 調整
-        const T0: f64 = 5e3;
-        const T1: f64 = 6e1;
+        const T0: f64 = 5e6;
+        const T1: f64 = 6e2;
         const TL_S: f64 = 5.0 - 0.05;
+        // const TL_S: f64 = 0.95;
         // const LOOP: usize = 1e6 as usize * 5;
 
-        let mut rng = rand_pcg::Pcg64Mcg::new(890482);
+        // let mut rng = rand_pcg::Pcg64Mcg::new(890482);
+        let mut rng = rand_pcg::Pcg64Mcg::new(seed);
         let mut T = 0 as f64;
         let mut i = 0;
 
+        let mut t = timer.elapsed() / TL_S;
+        let mut max_n: i64 = (30.0 as f64).powf(1.0 - t) as i64;
         loop {
             // let old_score = self.calc_score();
             let old_score = self.get_score();
-            if timer.elapsed() >= TL_S {
-                break;
-            }
+
             if i % 100 == 0 {
-                let t = timer.elapsed() / TL_S;
+                if timer.elapsed() >= TL_S {
+                    break;
+                }
+                t = timer.elapsed() / TL_S;
                 T = T0.powf(1.0 - t) * T1.powf(t);
             }
 
@@ -1046,17 +1051,19 @@ impl State {
 
             let target = rng.gen_range(0, n) as usize;
             let rect = &self.ads[target];
+            let is_over = rect.area() >= xyr[target].2;
             // let new_rect = rect.make_change((0, 1, 0, 1));
-            let max_n = 10;
+            max_n = (50.0 as f64).powf(1.0 - t) as i64;
+            let low = if is_over { 0 } else { -max_n };
             let new_rect = rect.make_change((
-                rng.gen_range(-max_n, max_n + 1),
-                rng.gen_range(-max_n, max_n + 1),
-                rng.gen_range(-max_n, max_n + 1),
-                rng.gen_range(-max_n, max_n + 1),
-                // rng.gen_range(-max_n, max_n / 2 + 1),
-                // rng.gen_range(-max_n / 2, max_n + 1),
-                // rng.gen_range(-max_n, max_n / 2 + 1),
-                // rng.gen_range(-max_n / 2, max_n + 1),
+                rng.gen_range(low, max_n + 1),
+                rng.gen_range(low, max_n + 1),
+                rng.gen_range(low, max_n + 1),
+                rng.gen_range(low, max_n + 1),
+                // rng.gen_range(low, max_n / 2 + 1),
+                // rng.gen_range(low / 2, max_n + 1),
+                // rng.gen_range(low, max_n / 2 + 1),
+                // rng.gen_range(low / 2, max_n + 1),
             ));
             if new_rect.is_none() {
                 i += 1;
@@ -1090,14 +1097,17 @@ impl State {
             } else {
                 self.ads[target] = new_rect;
                 self.score = Some(new_score);
-                // eprintln!(
-                //     "s: i={}, {}->{} ({}), T={}",
-                //     i,
-                //     old_score,
-                //     new_score,
-                //     new_score - old_score,
-                //     T
-                // );
+                if new_score != old_score {
+                    // eprintln!(
+                    //     "s: i={}, maxn={}, {}->{} ({}), T={}",
+                    //     i,
+                    //     max_n,
+                    //     old_score,
+                    //     new_score,
+                    //     new_score - old_score,
+                    //     T
+                    // );
+                }
             }
 
             i += 1;
@@ -1189,6 +1199,9 @@ fn main() {
         if i >= 99 {
             break;
         }
+        // if i >= 1 {
+        //     break;
+        // }
         let entry = match entry {
             Ok(entry) => entry,
             Err(e) => {
@@ -1211,15 +1224,28 @@ fn main() {
                     {n; xyr: (i64, i64, i64)}
                 );
 
-                let mut best_state = State::new(CFG { n: n, xyr: xyr });
                 // eprintln!("state:\n{:?}", best_state);
                 // assert_eq!(score, 79325);
                 // eprintln!("score_before: {}", score);
-                best_state.annealing_update();
+
+                let results = (0..1)
+                    .map(|i| {
+                        let mut best_state = State::new(CFG {
+                            n: n,
+                            xyr: xyr.clone(),
+                        });
+                        best_state.annealing_update(i);
+                        let s = best_state.calc_score();
+                        (best_state, s)
+                    })
+                    .collect_vec();
+                // eprintln!("{:?}", results.iter().map(|a| { a.1 }).collect_vec());
+                let (best_state, best_score) =
+                    results.iter().max_by_key(|(_, score)| score).unwrap();
                 // eprintln!("state:\n{:?}", best_state);
                 // eprintln!("score_after: {}", best_state.calc_score());
 
-                let best_score = best_state.calc_score();
+                let best_score = best_state.get_score();
                 eprintln!("{}: {}", i, best_score);
                 tx_clone.send(best_score).unwrap();
             });
