@@ -879,11 +879,15 @@ struct Rect {
 }
 
 impl Rect {
-    fn new(x1: i64, x2: i64, y1: i64, y2: i64) -> Self {
-        assert!(x1 < x2);
-        assert!(y1 < y2);
+    fn new(x1: i64, x2: i64, y1: i64, y2: i64) -> Option<Self> {
+        if !(x1 < x2) {
+            return None;
+        }
+        if !(y1 < y2) {
+            return None;
+        }
 
-        Rect { x1, x2, y1, y2 }
+        Some(Rect { x1, x2, y1, y2 })
     }
 
     //TODO test
@@ -897,7 +901,7 @@ impl Rect {
         (self.x2 - self.x1) * (self.y2 - self.y1)
     }
 
-    fn make_change(&self, delta: (i64, i64, i64, i64)) -> Self {
+    fn make_change(&self, delta: (i64, i64, i64, i64)) -> Option<Self> {
         let (mut x1, mut x2, mut y1, mut y2) = (self.x1, self.x2, self.y1, self.y2);
         x1 += delta.0;
         x2 += delta.1;
@@ -913,10 +917,11 @@ impl Rect {
         chmax!(y1, 0);
         chmax!(y2, 0);
 
-        Rect { x1, x2, y1, y2 }
+        Rect::new(x1, x2, y1, y2)
     }
 }
 
+const EPS: f64 = 1e-9;
 #[derive(Debug)]
 struct State {
     ads: Vec<Rect>,
@@ -934,7 +939,7 @@ impl State {
 
         let mut rects = vec![];
         for (x, y, r) in xyr.iter() {
-            rects.push(Rect::new(*x, x + 1, *y, y + 1));
+            rects.push(Rect::new(*x, x + 1, *y, y + 1).unwrap());
         }
 
         State {
@@ -943,8 +948,13 @@ impl State {
         }
     }
 
-    pub fn p_1rect(rect: &Rect, r: i64) -> f64 {
+    pub fn p_1rect(rect: &Rect, r: i64, x: i64, y: i64) -> f64 {
         //TODO 作り方によっては0点になることがある
+        let x = x as f64 + 0.5;
+        let y = y as f64 + 0.5;
+        if x < rect.x1 as f64 || x > rect.x2 as f64 || y < rect.y1 as f64 || y > rect.y2 as f64 {
+            return 0.0;
+        }
 
         let a = rect.area();
         // assert!(a == 1);
@@ -958,7 +968,7 @@ impl State {
 
         let mut res: f64 = 0.0;
         for (rect, (x, y, r)) in self.ads.iter().zip(xyr.iter()) {
-            let p = State::p_1rect(rect, *r);
+            let p = State::p_1rect(rect, *r, *x, *y);
             res += 1e9 * p / n;
         }
 
@@ -997,7 +1007,7 @@ impl State {
         let xyr = XYR.lock().unwrap();
 
         // //TODO 調整
-        const T0: f64 = 2e3;
+        const T0: f64 = 5e3;
         const T1: f64 = 6e2;
         const TL_S: f64 = 5.0 - 0.05;
         // const LOOP: usize = 1e6 as usize * 5;
@@ -1024,15 +1034,35 @@ impl State {
             //     // TODO local searchをして、確率で採用する
             let target = rng.gen_range(0, *n) as usize;
             let rect = &self.ads[target];
-            let new_rect = rect.make_change((0, 1, 0, 1));
+            // let new_rect = rect.make_change((0, 1, 0, 1));
+            let new_rect = rect.make_change((
+                rng.gen_range(-1, 2),
+                rng.gen_range(-1, 2),
+                rng.gen_range(-1, 2),
+                rng.gen_range(-1, 2),
+            ));
+            if new_rect.is_none() {
+                i += 1;
+                continue;
+            }
+            let new_rect = new_rect.unwrap();
 
             if self.check_new_rect(&new_rect, target) {
+                i += 1;
+                continue;
+            }
+
+            let new_rect_score_p =
+                State::p_1rect(&new_rect, xyr[target].2, xyr[target].0, xyr[target].1);
+            if new_rect_score_p.abs() < EPS {
+                i += 1;
                 continue;
             }
 
             let new_score = (old_score as f64)
-                - State::p_1rect(rect, xyr[target].2) * 1e9 / (*n as f64)
-                + State::p_1rect(&new_rect, xyr[target].2) * 1e9 / (*n as f64);
+                - State::p_1rect(rect, xyr[target].2, xyr[target].0, xyr[target].1) * 1e9
+                    / (*n as f64)
+                + new_rect_score_p * 1e9 / (*n as f64);
             let new_score = new_score.round() as i64;
 
             //     let new_score = self.change_and_rescore(d_1, con_2);
