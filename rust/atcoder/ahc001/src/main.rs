@@ -25,11 +25,17 @@ use rand::Rng;
 use std::borrow::Borrow;
 use std::cmp::*;
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
+use std::fs;
 use std::io::*;
 use std::mem::swap;
 use std::ops::{BitAnd, Neg, Range, ShrAssign};
+use std::path::Path;
 use std::str::FromStr;
+use std::sync::mpsc;
 use std::sync::Mutex;
+use std::thread;
+use std::thread::sleep;
+use std::time::Duration;
 use superslice::*;
 
 // ##########
@@ -1034,8 +1040,8 @@ impl State {
                 T = T0.powf(1.0 - t) * T1.powf(t);
             }
 
-            if i % 1000000 == 0 {
-                eprintln!("i = {}, s={}, T={}, e={}", i, old_score, T, timer.elapsed());
+            if i % 100000 == 0 {
+                // eprintln!("i = {}, s={}, T={}, e={}", i, old_score, T, timer.elapsed());
             }
 
             //     // TODO local searchをして、確率で採用する
@@ -1125,14 +1131,118 @@ mod state_tests {
 
 // ABC081A
 // #[fastout]
-fn main() {
-    //new type
-    let mut res = 0;
+// fn main() {
+//     //new type
+//     let mut res = 0;
 
-    input! {
-        n: i64,
-        xyr:[(i64, i64, i64); n],
+//     input! {
+//         n: i64,
+//         xyr:[(i64, i64, i64); n],
+//     };
+
+//     // let mut test_state = State::new(d as i32);
+//     // for (i_d, a) in enumerate([1, 17, 13, 14, 13]) {
+//     //     test_state.selected.push(a - 1);
+//     //     test_state.select_day[a - 1].push(i_d + 1);
+//     // }
+
+//     let mut best_state = State::new(CFG { n: n, xyr: xyr });
+//     eprintln!("state:\n{:?}", best_state);
+//     let score = best_state.calc_score();
+//     // assert_eq!(score, 79325);
+//     eprintln!("score_before: {}", score);
+//     best_state.annealing_update();
+//     eprintln!("state:\n{:?}", best_state);
+//     eprintln!("score_after: {}", best_state.calc_score());
+
+//     best_state.print_out();
+// }
+
+// 性能検証用
+const PATH_INPUTS_DIR: &str = "tools/in";
+fn main() {
+    // あるディレクトリへのpathを指定する
+    let directory = Path::new(PATH_INPUTS_DIR);
+
+    let (tx, rx) = mpsc::channel();
+
+    // ディレクトリ内のファイル名を全て取得する
+    let entries = match fs::read_dir(directory) {
+        Ok(entries) => entries,
+        Err(e) => {
+            println!("Error reading directory: {}", e);
+            return;
+        }
     };
+
+    let mut n_entries = 0;
+    // ディレクトリ内の*.txtのファイル名を全て取得する
+    for (i, entry) in entries.enumerate() {
+        // if i % 100 == 99 {
+        if i % 20 == 19 {
+            sleep(Duration::from_secs(5));
+            eprint!("i={}", i);
+        }
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(e) => {
+                println!("Error reading directory entry: {}", e);
+                continue;
+            }
+        };
+
+        let path = entry.path();
+        if path.is_file() && path.extension().unwrap_or_default() == "txt" {
+            // println!("{}", path.to_str().unwrap());
+            let tx_clone = tx.clone();
+            n_entries += 1;
+            // ここで処理を走らせる
+            thread::spawn(move || {
+                let content = fs::read_to_string(path).unwrap();
+
+                input_text!(content=>
+                    (n: i64)
+                    {n; xyr: (i64, i64, i64)}
+                );
+
+                let mut best_state = State::new(CFG { n: n, xyr: xyr });
+                // eprintln!("state:\n{:?}", best_state);
+                // assert_eq!(score, 79325);
+                // eprintln!("score_before: {}", score);
+                best_state.annealing_update();
+                // eprintln!("state:\n{:?}", best_state);
+                // eprintln!("score_after: {}", best_state.calc_score());
+
+                let best_score = best_state.calc_score();
+                eprintln!("{}: {}", i, best_score);
+                tx_clone.send(best_score).unwrap();
+            });
+        }
+    }
+    eprintln!("n_entry: {}", n_entries);
+    let mut total_score = 0;
+    for i in 0..n_entries {
+        total_score += rx.recv().unwrap();
+    }
+
+    let total_score_str = total_score.to_string();
+    let mut format = vec![];
+    for (i, s) in total_score_str.chars().rev().enumerate() {
+        format.push(s);
+        if i % 3 == 2 {
+            format.push(',')
+        }
+    }
+    let format: String = format.iter().rev().collect();
+    eprintln!("total_score: {}", total_score);
+    eprintln!("total_score: {}", format);
+    //new type
+    // let mut res = 0;
+
+    // input! {
+    //     n: i64,
+    //     xyr:[(i64, i64, i64); n],
+    // };
 
     // let mut test_state = State::new(d as i32);
     // for (i_d, a) in enumerate([1, 17, 13, 14, 13]) {
@@ -1140,16 +1250,16 @@ fn main() {
     //     test_state.select_day[a - 1].push(i_d + 1);
     // }
 
-    let mut best_state = State::new(CFG { n: n, xyr: xyr });
-    eprintln!("state:\n{:?}", best_state);
-    let score = best_state.calc_score();
-    // assert_eq!(score, 79325);
-    eprintln!("score_before: {}", score);
-    best_state.annealing_update();
-    eprintln!("state:\n{:?}", best_state);
-    eprintln!("score_after: {}", best_state.calc_score());
+    // let mut best_state = State::new(CFG { n: n, xyr: xyr });
+    // eprintln!("state:\n{:?}", best_state);
+    // let score = best_state.calc_score();
+    // // assert_eq!(score, 79325);
+    // eprintln!("score_before: {}", score);
+    // best_state.annealing_update();
+    // eprintln!("state:\n{:?}", best_state);
+    // eprintln!("score_after: {}", best_state.calc_score());
 
-    best_state.print_out();
+    // best_state.print_out();
 }
 
 // #[cfg(test)]
