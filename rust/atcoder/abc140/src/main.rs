@@ -6,8 +6,8 @@ extern crate num_bigint; // 0.2.2
 extern crate num_traits; // 0.2.8
 use num_bigint::BigInt;
 use num_traits::Pow;
-use petgraph::algo::dijkstra;
-use petgraph::Directed;
+// use petgraph::algo::dijkstra;
+// use petgraph::Directed;
 
 // // use proconio::derive_readable;
 use proconio::fastout;
@@ -17,7 +17,7 @@ use ascii::{AsciiChar, AsciiString};
 use itertools::concat;
 use lazy_static::lazy_static;
 // use libm::*;
-use petgraph::Graph;
+// use petgraph::Graph;
 use std::cmp::*;
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 use std::io::*;
