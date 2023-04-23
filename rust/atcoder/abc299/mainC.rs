@@ -5,22 +5,29 @@ extern crate num_bigint;
 // 0.2.2
 extern crate num_traits;
 
+use itertools::Itertools;
+use num::abs;
 // 0.2.8
 use num_bigint::BigInt;
-use num_traits::{one, zero, Num, NumAssignOps, NumOps, One, Pow, Zero};
+use num_traits::{one, zero, Num, NumAssignOps, NumOps, One, Pow, ToPrimitive, Zero};
 
 // use proconio::derive_readable;
 use proconio::fastout;
 use proconio::input;
+use proconio::marker::Chars;
 // use std::convert::TryInto;
 use itertools::{assert_equal, concat};
 use lazy_static::lazy_static;
 // use libm::*;
+use ascii::AsciiChar;
 use std::cmp::*;
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
+use std::f32::EPSILON;
+use std::f64::consts::PI;
 use std::io::*;
+use std::iter::FromIterator;
 use std::mem::swap;
-use std::ops::{BitAnd, Range, ShrAssign};
+use std::ops::{BitAnd, Neg, Range, ShrAssign};
 use std::str::FromStr;
 use std::sync::Mutex;
 use superslice::*;
@@ -97,15 +104,13 @@ macro_rules! max {
     }};
 }
 
-
-
 // ##########
 // modint
 // https://qiita.com/drken/items/3b4fdf0a78e7a138cd9a
 // ##########
 
 #[allow(dead_code)]
-fn modinv<T: Num + NumAssignOps + NumOps + Copy + PartialOrd>(a: T, m: T) -> T {
+fn modinv<T: Num + NumAssignOps + NumOps + Copy + PartialOrd + Neg>(a: T, m: T) -> T {
     let mut a = a;
     let mut b = m;
     let mut u: T = one();
@@ -181,6 +186,7 @@ mod comb {
         static ref INV: Mutex<Vec<usize>> = Mutex::default();
         static ref MODULO: Mutex<usize> = Mutex::default();
         // static ref MAXNCONV: Mutex<usize> = Mutex::default();
+
     }
 
     // // テーブルを作る前処理
@@ -268,7 +274,8 @@ mod uf {
     // let mut uf = uf::UnionFind::new(10);
     // uf.unite; uf.same
     #[allow(dead_code)]
-    struct UnionFind {
+    #[derive(Debug)]
+    pub struct UnionFind {
         par: Vec<i64>,
         rank: Vec<usize>,
     }
@@ -391,7 +398,7 @@ mod uf {
 // ###########
 mod seg_tree {
     #[derive(Debug)]
-    struct SegTree<T: Clone> {
+    pub struct SegTree<T: Clone> {
         n: usize,
         dat: Vec<Option<T>>,
     }
@@ -571,7 +578,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("a").unwrap()
+                &AsciiString::from_str("a").unwrap(),
             )
         );
 
@@ -580,7 +587,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("aaabca").unwrap()
+                &AsciiString::from_str("aaabca").unwrap(),
             )
         );
 
@@ -589,7 +596,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("aaaaaa").unwrap(),
-                &AsciiString::from_str("aaaaaa").unwrap()
+                &AsciiString::from_str("aaaaaa").unwrap(),
             )
         );
 
@@ -598,7 +605,7 @@ mod rolling_hash {
             contains_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("aacbaa").unwrap()
+                &AsciiString::from_str("aacbaa").unwrap(),
             )
         )
     }
@@ -635,7 +642,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("a").unwrap()
+                &AsciiString::from_str("a").unwrap(),
             )
         );
 
@@ -644,7 +651,7 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("abc").unwrap(),
-                &AsciiString::from_str("bca").unwrap()
+                &AsciiString::from_str("bca").unwrap(),
             )
         );
 
@@ -653,18 +660,32 @@ mod rolling_hash {
             overlap_last_and_head_with(
                 base,
                 &AsciiString::from_str("hogefoobar").unwrap(),
-                &AsciiString::from_str("oobarhoge").unwrap()
+                &AsciiString::from_str("oobarhoge").unwrap(),
             )
         );
     }
+}
+
+#[allow(dead_code)]
+fn to_alphabet_num(a: AsciiChar) -> usize {
+    (a.as_byte() - AsciiChar::a.as_byte()) as usize
+}
+
+#[allow(dead_code)]
+fn num_to_alphabet(a: usize) -> Option<AsciiChar> {
+    let a = a
+        .to_u8()
+        .map(|a| AsciiChar::from_ascii(AsciiChar::a.as_byte() + a as u8).ok());
+    return a.flatten();
 }
 
 // ##########
 // lazy_static!
 // ##########
 lazy_static! {
-    static ref DP: Mutex<Vec<Vec<Option<(usize, usize)>>>> = Mutex::default();
-//     static ref W: Mutex<Vec<i32>> = Mutex::default();
+    static ref H: Mutex<Vec<i32>> = Mutex::default();
+    static ref W: Mutex<Vec<i32>> = Mutex::default();
+    static ref N: Mutex<i64> = Mutex::default();
 }
 // let mut values = VALUES.lock().unwrap();
 // values.extend_from_slice(&[1, 2, 3, 4]);
@@ -681,88 +702,53 @@ const MOD: usize = 1000000007;
 #[allow(dead_code)]
 const MAXN_CONV: usize = 510000;
 
-// abc000-A
+// let mut test_vec = vec![1, 3, 5, 7];
+// let mut test_set = HashSet::new();
+// let mut test_dict = HashMap::new();
+
+// test_dict.insert("me", 1);
+// let a = test_dict["me"];
+// test_set.insert("value");
+// {
+//     let mut a = N.lock().unwrap();
+//     *a = 10;
+// }
+// println!("{:?}", N.lock().unwrap());
+
 // #[fastout]
-fn main() {
-    input![a: usize, b: usize, c: usize, d: usize, e: usize, f: usize];
-    //new type
+fn main(){
+    // println!("Hello, world!");
 
-    {
-        let mut dp = DP.lock().unwrap();
-        *dp = vec![vec![None; 3200]; 32];
+    // input![n: usize, m: usize, a: [usize; n] ];
+    input![n: usize, s:Chars];
+
+    let mut cnt = 0_i64;
+    let mut res = 0_i64;
+    for i in 0..n{
+        if s[i] == '-'{
+            chmax!(res, cnt);
+            cnt = 0;
+        }
+        else{
+            cnt += 1;
+        }
     }
 
-    let (w, s) = solve((0,0), (a,b,c,d,e,f));
-    if (0,0) == (s,w) {
-        println!("{} {}", a * 100, 0 );
-    }else{
-        println!("{} {}", w * 100 +s, s );
+    let s = s.iter().rev().collect::<Vec<_>>();
+    cnt = 0;
+    for i in 0..n{
+        if *s[i] == '-'{
+            chmax!(res, cnt);
+            cnt = 0;
+        }
+        else{
+            cnt += 1;
+        }
     }
+
+
+
+    println!("{}", if res > 0 {res}else{-1});
 }
 
-fn solve(state: (usize, usize), setting: (usize,usize,usize,usize,usize,usize) ) -> (usize, usize) {
-    // eprintln!("{:?}", state);
-    {
-        let dp = DP.lock().unwrap();
-        if let Some(v) = dp[state.0][state.1] {
-            return v;
-        }
-    }
 
-    let (w, s) = state;
-    let (a,b,c,d,e,f) = setting;
-
-    let mut ans: Option<(usize, usize)> = None;
-
-    //砂糖が入るか?->入らない時
-    if (w * e < s + c || w *100 + s + c > f ) && ( w * e < s + d || w * 100 + s + d > f) {
-        let s1 = if (w+a) * 100 + s > f { (0, 0) } else {
-            solve((w + a, s), setting)
-        };
-        let s2 = if (w+b) * 100 + s> f { (0,0) } else {
-            solve((w + b, s), setting)
-        };
-
-        if s1 == (0, 0) && s2 == (0,0){
-
-        }else{
-            let r1 = if s1.1 + s1.0 == 0 {0f64}else{ (100 * s1.1) as f64 / (100 * s1.0 + s1.1) as f64};
-            let r2 = if s2.1 + s2.0 == 0 {0f64}else{ (100 * s2.1) as f64 / (100 * s2.0 + s2.1) as f64};
-
-            ans = Some(if r1 > r2 {
-                s1
-            }else{
-                s2
-            });
-
-            // eprintln!("1: {:?}, r1: {}, r2:{}", ans.unwrap(), r1, r2);
-        }
-    }else{
-        let s1 = if w * e < s + c || w * 100 + s + c > f { (0, 0) } else {
-            solve((w , s + c), setting)
-        };
-        let s2 = if w * e < s + d || w * 100 + s + d > f { (0,0) } else {
-            solve((w , s + d), setting)
-        };
-
-        if s1 == (0, 0) && s2 == (0,0){
-
-        }else{
-            let r1 = if s1.1 + s1.0 == 0 {0f64}else{ (100 * s1.1) as f64 / (100 *s1.0 + s1.1) as f64};
-            let r2 = if s2.1 + s2.0 == 0 {0f64}else{ (100 * s2.1) as f64 / (100 *s2.0 + s2.1) as f64};
-
-            ans = Some(if r1 > r2 {
-                s1
-            }else{
-                s2
-            });
-
-            // eprintln!("2: {:?}, r1: {}, r2:{}", ans.unwrap(), r1, r2);
-        }
-    }
-
-    let ans = ans.unwrap_or((w,s));
-    let mut dp = DP.lock().unwrap();
-    dp[w][s] = Some(ans);
-    return ans;
-}
